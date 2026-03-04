@@ -1,0 +1,238 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 40% 8%;
+    --foreground: 210 40% 96%;
+
+    --card: 220 35% 12%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 220 35% 14%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 168 52% 45%;
+    --primary-foreground: 220 40% 8%;
+
+    --secondary: 220 30% 16%;
+    --secondary-foreground: 210 40% 90%;
+
+    --muted: 220 30% 18%;
+    --muted-foreground: 215 20% 55%;
+
+    --accent: 220 30% 20%;
+    --accent-foreground: 210 40% 92%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 30% 22%;
+    --input: 220 30% 18%;
+    --ring: 168 52% 45%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 220 45% 6%;
+    --sidebar-foreground: 210 20% 75%;
+    --sidebar-primary: 168 52% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 35% 14%;
+    --sidebar-accent-foreground: 210 30% 92%;
+    --sidebar-border: 220 30% 15%;
+    --sidebar-ring: 168 52% 50%;
+
+    /* Custom tokens */
+    --teal: 168 52% 45%;
+    --teal-light: 168 40% 20%;
+    --teal-medium: 168 45% 55%;
+    --navy: 220 40% 8%;
+    --navy-light: 220 30% 20%;
+    --sky: 200 80% 55%;
+    --amber: 38 92% 55%;
+    --violet: 262 52% 55%;
+    --rose: 350 65% 55%;
+
+    /* Glass tokens */
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-bg-hover: rgba(255, 255, 255, 0.07);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-hover: rgba(255, 255, 255, 0.14);
+    --glass-glow: rgba(43, 140, 126, 0.15);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+    --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+
+    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+    --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.25);
+    --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Blueprint Background */
+.blueprint-bg {
+  background: 
+    linear-gradient(135deg, hsl(220, 45%, 6%) 0%, hsl(220, 40%, 10%) 40%, hsl(225, 35%, 14%) 70%, hsl(220, 45%, 8%) 100%);
+  position: relative;
+}
+
+.blueprint-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(43, 140, 126, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 140, 126, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blueprint-bg::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 800px 600px at 20% 20%, rgba(43, 140, 126, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 400px at 80% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 300px at 50% 50%, rgba(139, 92, 246, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: plasma-drift 20s ease-in-out infinite alternate;
+}
+
+@keyframes plasma-drift {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+/* Glass Component Base */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-hover);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.glass-sidebar {
+  background: rgba(10, 15, 30, 0.85);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: hsl(210, 40%, 96%);
+}
+
+.glass-input:focus {
+  border-color: hsl(168, 52%, 45%);
+  box-shadow: 0 0 0 2px rgba(43, 140, 126, 0.2);
+}
+
+.glass-input::placeholder {
+  color: hsl(215, 20%, 45%);
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: hsl(210, 40%, 96%);
+  transition: all 0.2s ease;
+}
+
+.glass-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.glass-badge {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: hsl(210, 40%, 90%);
+}
+
+/* Glow accents */
+.glow-teal {
+  box-shadow: 0 0 20px rgba(43, 140, 126, 0.15), 0 0 60px rgba(43, 140, 126, 0.05);
+}
+
+.glow-border-teal {
+  border-color: rgba(43, 140, 126, 0.3);
+}
+
+/* Internal plasma flow for cards */
+.glass-plasma {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-plasma::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(43, 140, 126, 0.05) 0%,
+    transparent 40%,
+    rgba(59, 130, 246, 0.03) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+  animation: plasma-internal 8s ease-in-out infinite alternate;
+}
+
+@keyframes plasma-internal {
+  0% { opacity: 0.5; transform: translateX(-5%) translateY(-5%); }
+  100% { opacity: 1; transform: translateX(5%) translateY(5%); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
