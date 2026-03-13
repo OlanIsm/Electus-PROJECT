@@ -20,7 +20,7 @@
 
 **Backend:**
 * NestJS (Node.js framework)
-* Prisma ORM
+* TypeORM
 * PostgreSQL (with `pgvector` extension for vector similarity search)
 * Gemini API (LLM Generation & Vector Embeddings)
 
@@ -28,12 +28,6 @@
 1. **Ingestion:** CVs (PDFs) are uploaded -> Text extracted -> Gemini API generates context and Vector Embeddings -> Stored in PostgreSQL.
 2. **Retrieval:** HR enters a semantic query -> Query is vectorized -> `pgvector` calculates Cosine Similarity to find the closest matching CVs.
 3. **Generation:** Top candidates are passed to Gemini LLM to generate a dynamic `Match Score %` and contextual reasoning for the HR team.
-
-## 👥 Meet The Squad
-*(Isi dengan nama tim lu bro)*
-* **[Nama Lu]** - AI Architect & Fullstack Engineer
-* **[Nama Temen 1]** - Backend & Database Engineer
-* **[Nama Temen 2]** - Frontend & UI/UX Engineer
 
 ---
 *Built with ❤️ for a smarter hiring future.*
