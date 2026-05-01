@@ -13,7 +13,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-type FileStatus = "pending" | "extracting" | "vectorizing" | "completed" | "error";
+const API_URL = "http://localhost:3000";
+
+type FileStatus = "pending" | "extracting" | "completed" | "error";
 
 interface UploadFile {
   id: string;
@@ -21,6 +23,8 @@ interface UploadFile {
   size: number;
   status: FileStatus;
   progress: number;
+  file: File; // actual File object for upload
+  errorMessage?: string;
 }
 
 const statusConfig: Record<FileStatus, { label: string; className: string }> = {
@@ -29,12 +33,8 @@ const statusConfig: Record<FileStatus, { label: string; className: string }> = {
     className: "bg-white/[0.06] text-white/50 border-white/[0.1]",
   },
   extracting: {
-    label: "Extracting Text & AI Summary...",
-    className: "bg-amber/15 text-amber border-amber/30",
-  },
-  vectorizing: {
-    label: "Generating Vectors (RAG)...",
-    className: "bg-sky/15 text-sky border-sky/30",
+    label: "Uploading & Extracting...",
+    className: "bg-amber-500/15 text-amber-400 border-amber-500/30",
   },
   completed: {
     label: "Completed",
@@ -49,7 +49,6 @@ const statusConfig: Record<FileStatus, { label: string; className: string }> = {
 const statusIcon: Record<FileStatus, React.ReactNode> = {
   pending: <AlertCircle className="h-3.5 w-3.5" />,
   extracting: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
-  vectorizing: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
   completed: <CheckCircle2 className="h-3.5 w-3.5" />,
   error: <AlertCircle className="h-3.5 w-3.5" />,
 };
@@ -82,6 +81,7 @@ export default function BatchUpload() {
         size: f.size,
         status: "pending" as FileStatus,
         progress: 0,
+        file: f,
       }));
     setFiles((prev) => [...prev, ...newFiles]);
   }, []);
@@ -99,65 +99,58 @@ export default function BatchUpload() {
     [addFiles]
   );
 
-  const simulateProcessing = () => {
-    if (files.length === 0) return;
+  const startProcessing = async () => {
+    const pendingFiles = files.filter((f) => f.status === "pending");
+    if (pendingFiles.length === 0) return;
+
     setIsProcessing(true);
 
-    const pendingFiles = files.filter((f) => f.status === "pending");
-    if (pendingFiles.length === 0) {
-      setIsProcessing(false);
-      return;
+    // Process files one by one
+    for (const uploadFile of pendingFiles) {
+      // Mark as extracting
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === uploadFile.id ? { ...f, status: "extracting", progress: 30 } : f
+        )
+      );
+
+      try {
+        const formData = new FormData();
+        formData.append("file", uploadFile.file);
+
+        const response = await fetch(`${API_URL}/candidates/upload`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.message || "Upload failed");
+        }
+
+        // Success
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === uploadFile.id ? { ...f, status: "completed", progress: 100 } : f
+          )
+        );
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === uploadFile.id
+              ? { ...f, status: "error", progress: 0, errorMessage: message }
+              : f
+          )
+        );
+      }
     }
 
-    pendingFiles.forEach((file, idx) => {
-      const baseDelay = idx * 3500;
-
-      setTimeout(() => {
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === file.id ? { ...f, status: "extracting", progress: 25 } : f
-          )
-        );
-      }, baseDelay + 300);
-
-      setTimeout(() => {
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === file.id ? { ...f, progress: 50 } : f
-          )
-        );
-      }, baseDelay + 1200);
-
-      setTimeout(() => {
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === file.id ? { ...f, status: "vectorizing", progress: 70 } : f
-          )
-        );
-      }, baseDelay + 2000);
-
-      setTimeout(() => {
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === file.id ? { ...f, progress: 90 } : f
-          )
-        );
-      }, baseDelay + 2800);
-
-      setTimeout(() => {
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === file.id ? { ...f, status: "completed", progress: 100 } : f
-          )
-        );
-        if (idx === pendingFiles.length - 1) {
-          setIsProcessing(false);
-        }
-      }, baseDelay + 3400);
-    });
+    setIsProcessing(false);
   };
 
   const pendingCount = files.filter((f) => f.status === "pending").length;
+  const completedCount = files.filter((f) => f.status === "completed").length;
 
   return (
     <DashboardLayout>
@@ -230,10 +223,10 @@ export default function BatchUpload() {
             <p className="text-sm text-white/40">
               {files.length === 0
                 ? "No files selected"
-                : `${files.length} file${files.length > 1 ? "s" : ""} selected · ${pendingCount} pending`}
+                : `${files.length} file${files.length > 1 ? "s" : ""} · ${pendingCount} pending · ${completedCount} completed`}
             </p>
             <Button
-              onClick={simulateProcessing}
+              onClick={startProcessing}
               disabled={pendingCount === 0 || isProcessing}
               className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
@@ -281,6 +274,9 @@ export default function BatchUpload() {
                       <div className="mt-2">
                         <Progress value={file.progress} className="h-1.5 bg-white/[0.06] [&>div]:bg-primary" />
                       </div>
+                      {file.status === "error" && file.errorMessage && (
+                        <p className="mt-1 text-xs text-destructive">{file.errorMessage}</p>
+                      )}
                     </div>
 
                     {/* Status badge */}
@@ -296,10 +292,7 @@ export default function BatchUpload() {
                     <button
                       onClick={() => removeFile(file.id)}
                       className="shrink-0 rounded-md p-1.5 text-white/30 transition-colors hover:bg-destructive/10 hover:text-destructive"
-                      disabled={
-                        file.status === "extracting" ||
-                        file.status === "vectorizing"
-                      }
+                      disabled={file.status === "extracting"}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

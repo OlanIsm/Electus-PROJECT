@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronDown } from "lucide-react";
+import { Calendar, ChevronDown, UploadCloud } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   BarChart,
@@ -18,44 +19,10 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import type { Candidate } from "@/types/candidate";
 
+const API_URL = "http://localhost:3000";
 const dateRanges = ["Last 7 Days", "Last 30 Days", "Last 90 Days", "This Year"];
-
-const funnelData = [
-  { stage: "Total Uploaded", value: 150, fill: "rgba(255,255,255,0.25)" },
-  { stage: "Passed AI Screening", value: 84, fill: "rgba(255,255,255,0.18)" },
-  { stage: "Reviewed", value: 42, fill: "hsl(168, 45%, 50%)" },
-  { stage: "Interview Invited", value: 12, fill: "hsl(168, 52%, 45%)" },
-];
-
-const hollandData = [
-  { name: "Realistic", value: 18, color: "#E74C3C" },
-  { name: "Investigative", value: 28, color: "#3498DB" },
-  { name: "Artistic", value: 14, color: "#9B59B6" },
-  { name: "Social", value: 16, color: "#2ECC71" },
-  { name: "Enterprising", value: 15, color: "#F39C12" },
-  { name: "Conventional", value: 9, color: "#1ABC9C" },
-];
-
-const skillsData = [
-  { skill: "React", count: 45 },
-  { skill: "Python", count: 38 },
-  { skill: "Agile", count: 30 },
-  { skill: "System Design", count: 25 },
-  { skill: "TypeScript", count: 22 },
-  { skill: "AWS", count: 18 },
-  { skill: "SQL", count: 15 },
-];
-
-const processingData = [
-  { day: "Mon", time: 2.1 },
-  { day: "Tue", time: 2.5 },
-  { day: "Wed", time: 2.3 },
-  { day: "Thu", time: 2.8 },
-  { day: "Fri", time: 2.2 },
-  { day: "Sat", time: 2.0 },
-  { day: "Sun", time: 2.4 },
-];
 
 const GlassTooltipStyle = {
   borderRadius: "8px",
@@ -66,9 +33,128 @@ const GlassTooltipStyle = {
   color: "rgba(255,255,255,0.8)",
 };
 
+const HOLLAND_COLORS: Record<string, string> = {
+  Realistic: "#E74C3C",
+  Investigative: "#3498DB",
+  Artistic: "#9B59B6",
+  Social: "#2ECC71",
+  Enterprising: "#F39C12",
+  Conventional: "#1ABC9C",
+};
+
 const Statistics = () => {
+  const navigate = useNavigate();
   const [dateRange, setDateRange] = useState("Last 30 Days");
   const [dateOpen, setDateOpen] = useState(false);
+
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        const res = await fetch(`${API_URL}/candidates`);
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data = await res.json();
+        setCandidates(data);
+      } catch (err) {
+        console.error(err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCandidates();
+  }, []);
+
+  const stats = useMemo(() => {
+    if (!candidates.length) return null;
+
+    const total = candidates.length;
+    const reviewed = candidates.filter(c => c.reviewStatus === "reviewed").length;
+    
+    // Funnel
+    const funnelData = [
+      { stage: "Total Uploaded", value: total, fill: "rgba(255,255,255,0.25)" },
+      { stage: "Passed AI Screening", value: total, fill: "rgba(255,255,255,0.18)" }, // Assuming all pass parsing
+      { stage: "Reviewed", value: reviewed, fill: "hsl(168, 45%, 50%)" },
+      { stage: "Interview Invited", value: 0, fill: "hsl(168, 52%, 45%)" }, // Placeholder for future feature
+    ];
+
+    // Holland
+    const hollandMap: Record<string, number> = {};
+    candidates.forEach(c => {
+      if (c.hollandCode?.label) {
+        hollandMap[c.hollandCode.label] = (hollandMap[c.hollandCode.label] || 0) + 1;
+      }
+    });
+    const hollandData = Object.entries(hollandMap).map(([name, value]) => ({
+      name,
+      value: Math.round((value / total) * 100), // percentage
+      color: HOLLAND_COLORS[name] || "#ccc",
+    })).sort((a, b) => b.value - a.value);
+
+    // Skills
+    const skillsMap: Record<string, number> = {};
+    candidates.forEach(c => {
+      if (c.skills) {
+        c.skills.forEach(s => {
+          skillsMap[s] = (skillsMap[s] || 0) + 1;
+        });
+      }
+    });
+    const skillsData = Object.entries(skillsMap)
+      .map(([skill, count]) => ({ skill, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 7); // Top 7
+
+    return { funnelData, hollandData, skillsData };
+  }, [candidates]);
+
+  // Mock processing time data since we don't store it yet
+  const processingData = [
+    { day: "Mon", time: 2.1 },
+    { day: "Tue", time: 2.5 },
+    { day: "Wed", time: 2.3 },
+    { day: "Thu", time: 2.8 },
+    { day: "Fri", time: 2.2 },
+    { day: "Sat", time: 2.0 },
+    { day: "Sun", time: 2.4 },
+  ];
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-white/40 text-sm">Loading analytics...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error || candidates.length === 0) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-[70vh] animate-fade-in text-center">
+          <div className="w-16 h-16 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-6">
+            <BarChart className="w-8 h-8 text-white/20" />
+          </div>
+          <h2 className="text-xl font-semibold text-white mb-2">No data available</h2>
+          <p className="text-sm text-white/40 mb-8 max-w-sm">
+            You have not submitted any CV yet. Start uploading candidate resumes to see AI-driven insights and analytics here.
+          </p>
+          <Button 
+            onClick={() => navigate('/upload')}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 glow-teal px-6"
+          >
+            <UploadCloud className="w-4 h-4 mr-2" />
+            Start Uploading CV Now
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -125,7 +211,7 @@ const Statistics = () => {
           <div className="px-6 pb-5">
             <ResponsiveContainer width="100%" height={260}>
               <BarChart
-                data={funnelData}
+                data={stats!.funnelData}
                 layout="vertical"
                 margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
                 barCategoryGap="28%"
@@ -135,7 +221,7 @@ const Statistics = () => {
                 <YAxis dataKey="stage" type="category" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.5)" }} axisLine={false} tickLine={false} width={130} />
                 <Tooltip contentStyle={GlassTooltipStyle} cursor={{ fill: "rgba(255,255,255,0.03)" }} formatter={(value: number) => [`${value} candidates`, "Count"]} />
                 <Bar dataKey="value" radius={[0, 6, 6, 0]}>
-                  {funnelData.map((entry, index) => (
+                  {stats!.funnelData.map((entry, index) => (
                     <Cell key={index} fill={entry.fill} />
                   ))}
                 </Bar>
@@ -151,24 +237,30 @@ const Statistics = () => {
             <p className="text-xs text-white/40">Holland Code distribution across all candidates</p>
           </div>
           <div className="px-6 pb-5 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie data={hollandData} cx="50%" cy="45%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value" stroke="none">
-                  {hollandData.map((entry, index) => (
-                    <Cell key={index} fill={entry.color} opacity={0.85} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={GlassTooltipStyle} formatter={(value: number, name: string) => [`${value}%`, name]} />
-                <Legend
-                  verticalAlign="bottom"
-                  iconType="circle"
-                  iconSize={8}
-                  formatter={(value: string) => (
-                    <span className="text-xs text-white/50 ml-1">{value}</span>
-                  )}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {stats!.hollandData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie data={stats!.hollandData} cx="50%" cy="45%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value" stroke="none">
+                    {stats!.hollandData.map((entry, index) => (
+                      <Cell key={index} fill={entry.color} opacity={0.85} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={GlassTooltipStyle} formatter={(value: number, name: string) => [`${value}%`, name]} />
+                  <Legend
+                    verticalAlign="bottom"
+                    iconType="circle"
+                    iconSize={8}
+                    formatter={(value: string) => (
+                      <span className="text-xs text-white/50 ml-1">{value}</span>
+                    )}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[280px] flex items-center justify-center">
+                <p className="text-sm text-white/30">Not enough data</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -179,15 +271,21 @@ const Statistics = () => {
             <p className="text-xs text-white/40">Top skills extracted by AI from all CVs</p>
           </div>
           <div className="px-6 pb-5">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={skillsData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }} barCategoryGap="20%">
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.4)" }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="skill" type="category" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.5)" }} axisLine={false} tickLine={false} width={100} />
-                <Tooltip contentStyle={GlassTooltipStyle} cursor={{ fill: "rgba(255,255,255,0.03)" }} formatter={(value: number) => [`${value} mentions`, "Count"]} />
-                <Bar dataKey="count" fill="hsl(168, 52%, 45%)" radius={[0, 6, 6, 0]} opacity={0.8} />
-              </BarChart>
-            </ResponsiveContainer>
+            {stats!.skillsData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={stats!.skillsData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }} barCategoryGap="20%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.4)" }} axisLine={false} tickLine={false} />
+                  <YAxis dataKey="skill" type="category" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.5)" }} axisLine={false} tickLine={false} width={100} />
+                  <Tooltip contentStyle={GlassTooltipStyle} cursor={{ fill: "rgba(255,255,255,0.03)" }} formatter={(value: number) => [`${value} mentions`, "Count"]} />
+                  <Bar dataKey="count" fill="hsl(168, 52%, 45%)" radius={[0, 6, 6, 0]} opacity={0.8} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[260px] flex items-center justify-center">
+                <p className="text-sm text-white/30">No skills data available</p>
+              </div>
+            )}
           </div>
         </div>
 

@@ -27,7 +27,7 @@ export function CandidateDetailModal({
 }: CandidateDetailModalProps) {
   if (!candidate) return null;
 
-  const displayName = blindMode ? "Anonymous Candidate" : candidate.name;
+  const displayName = blindMode ? "Anonymous Candidate" : candidate.fullName;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -39,7 +39,7 @@ export function CandidateDetailModal({
                 <User className="h-5 w-5 text-white/50" />
               ) : (
                 <span className="text-sm font-semibold text-white/80">
-                  {candidate.name.split(" ").map((n) => n[0]).join("")}
+                  {candidate.fullName.split(" ").map((n) => n[0]).join("")}
                 </span>
               )}
             </div>
@@ -68,7 +68,7 @@ export function CandidateDetailModal({
                 <h3 className="text-sm font-semibold text-white">AI Summary</h3>
               </div>
               <ul className="space-y-2">
-                {candidate.aiSummary.map((point, i) => (
+                {(candidate.aiSummary ?? []).map((point, i) => (
                   <li key={i} className="flex gap-2 text-sm text-white/50 leading-relaxed">
                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
                     {point}
@@ -101,13 +101,17 @@ export function CandidateDetailModal({
               <h3 className="text-sm font-semibold text-white mb-3">
                 Holland Code (RIASEC)
               </h3>
-              <HollandChart distribution={candidate.hollandCode.distribution} />
+              {candidate.hollandCode ? (
+                <HollandChart distribution={candidate.hollandCode.distribution} />
+              ) : (
+                <p className="text-sm text-white/30">Not available yet</p>
+              )}
             </div>
 
             <div>
               <h3 className="text-sm font-semibold text-white mb-2">Key Skills</h3>
               <div className="flex flex-wrap gap-1.5">
-                {candidate.skills.map((skill) => (
+                {(candidate.skills ?? []).map((skill) => (
                   <Badge key={skill} variant="secondary" className="text-[11px] font-medium bg-white/[0.06] border border-white/[0.08] text-white/70 hover:bg-white/[0.1]">
                     {skill}
                   </Badge>

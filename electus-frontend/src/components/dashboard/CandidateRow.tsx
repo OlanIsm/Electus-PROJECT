@@ -18,7 +18,7 @@ export function CandidateRow({
   onViewProfile,
   onToggleStatus,
 }: CandidateRowProps) {
-  const displayName = blindMode ? "Anonymous Candidate" : candidate.name;
+  const displayName = blindMode ? "Anonymous Candidate" : candidate.fullName;
 
   return (
     <div
@@ -31,7 +31,7 @@ export function CandidateRow({
           <User className="h-5 w-5 text-white/50" />
         ) : (
           <span className="text-sm font-semibold text-white/80">
-            {candidate.name.split(" ").map((n) => n[0]).join("")}
+            {candidate.fullName.split(" ").map((n) => n[0]).join("")}
           </span>
         )}
       </div>
@@ -45,9 +45,20 @@ export function CandidateRow({
           {candidate.hasPortfolio && (
             <Link2 className="h-3.5 w-3.5 text-white/40 shrink-0" />
           )}
+          {candidate.createdAt && (
+            <span className="text-[10px] text-white/25 shrink-0">
+              {new Date(candidate.createdAt).toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          )}
         </div>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {candidate.skills.map((skill) => (
+          {(candidate.skills ?? []).map((skill) => (
             <span
               key={skill}
               className="inline-flex items-center rounded-full bg-white/[0.06] border border-white/[0.08] px-2.5 py-0.5 text-[11px] font-medium text-white/70"
@@ -59,9 +70,15 @@ export function CandidateRow({
       </div>
 
       {/* Holland Code */}
-      <Badge variant="outline" className="shrink-0 text-[11px] font-medium border-white/[0.1] bg-white/[0.04] text-white/70">
-        {candidate.hollandCode.primary} – {candidate.hollandCode.label}
-      </Badge>
+      {candidate.hollandCode ? (
+        <Badge variant="outline" className="shrink-0 text-[11px] font-medium border-white/[0.1] bg-white/[0.04] text-white/70">
+          {candidate.hollandCode.primary} – {candidate.hollandCode.label}
+        </Badge>
+      ) : (
+        <Badge variant="outline" className="shrink-0 text-[11px] font-medium border-white/[0.1] bg-white/[0.04] text-white/40">
+          N/A
+        </Badge>
+      )}
 
       {/* Match Score */}
       <div className="w-20 text-right shrink-0">
@@ -84,7 +101,7 @@ export function CandidateRow({
         >
           View Profile
         </Button>
-        {candidate.status === "pending" && (
+        {candidate.reviewStatus === "pending" && (
           <Button
             variant="ghost"
             size="sm"

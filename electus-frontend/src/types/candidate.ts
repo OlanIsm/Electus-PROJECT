@@ -1,8 +1,7 @@
 export interface Candidate {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
-  avatar?: string;
   skills: string[];
   hollandCode: {
     primary: string;
@@ -12,8 +11,10 @@ export interface Candidate {
   hasPortfolio: boolean;
   portfolioUrl?: string;
   matchScore: number | null;
-  status: "pending" | "reviewed";
+  reviewStatus: "pending" | "reviewed";
   education: string;
   experience: string;
   aiSummary: string[];
+  cvText?: string;
+  createdAt?: string;
 }
