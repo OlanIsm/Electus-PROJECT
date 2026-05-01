@@ -13,10 +13,9 @@ export function AppSidebar() {
     <aside className="fixed left-0 top-0 z-30 flex h-screen w-60 flex-col glass-sidebar">
       {/* Logo */}
       <div className="flex flex-col gap-1 px-5 py-6 border-b border-white/[0.06]">
-        <span className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-teal-medium opacity-80" />
-          ELECTUS
-        </span>
+        <div className="flex items-center gap-2">
+          <img src="/Logo.png" alt="Electus Logo" className="h-8 w-auto object-contain rounded-md" />
+        </div>
         <span className="text-[11px] font-medium text-white/40 tracking-wide uppercase">
           AI-Powered ATS
         </span>

@@ -1,4 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Candidate {
@@ -14,8 +19,49 @@ export class Candidate {
   @Column({ default: 'pending' })
   reviewStatus: string;
 
+  // AI-generated 3-point summary stored as JSON array
+  @Column({ type: 'simple-json', nullable: true })
+  aiSummary: string[];
+
+  // Raw CV text for AI processing
   @Column({ type: 'text', nullable: true })
-  summary: string;
+  cvText: string;
+
+  // Skills extracted from CV
+  @Column({ type: 'simple-json', nullable: true })
+  skills: string[];
+
+  // Holland Code RIASEC personality assessment
+  @Column({ type: 'simple-json', nullable: true })
+  hollandCode: {
+    primary: string;
+    label: string;
+    distribution: {
+      code: string;
+      label: string;
+      value: number;
+      color: string;
+    }[];
+  };
+
+  @Column({ nullable: true })
+  education: string;
+
+  @Column({ nullable: true })
+  experience: string;
+
+  @Column({ nullable: true })
+  portfolioUrl: string;
+
+  @Column({ default: false })
+  hasPortfolio: boolean;
+
+  @Column({ type: 'float', nullable: true })
+  matchScore: number;
+
+  // Path to uploaded CV file
+  @Column({ nullable: true })
+  cvFilePath: string;
 
   @CreateDateColumn()
   createdAt: Date;

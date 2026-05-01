@@ -17,8 +17,8 @@ export function CandidateList({
   onViewProfile,
   onToggleStatus,
 }: CandidateListProps) {
-  const pending = candidates.filter((c) => c.status === "pending");
-  const reviewed = candidates.filter((c) => c.status === "reviewed");
+  const pending = candidates.filter((c) => c.reviewStatus === "pending");
+  const reviewed = candidates.filter((c) => c.reviewStatus === "reviewed");
 
   return (
     <Tabs defaultValue="pending" className="animate-fade-in">
