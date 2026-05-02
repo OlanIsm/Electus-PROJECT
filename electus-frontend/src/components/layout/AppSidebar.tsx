@@ -2,7 +2,7 @@ import { LayoutDashboard, Upload, BarChart3, User, Sparkles } from "lucide-react
 import { NavLink } from "@/components/NavLink";
 
 const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Batch Upload", url: "/upload", icon: Upload },
   { title: "Statistics", url: "/statistics", icon: BarChart3 },
   { title: "Account", url: "/account", icon: User },

@@ -8,6 +8,8 @@ import Statistics from "./pages/Statistics";
 import BatchUpload from "./pages/BatchUpload";
 import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +20,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Index />} />
           <Route path="/upload" element={<BatchUpload />} />
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/account" element={<Account />} />
