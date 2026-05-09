@@ -31,28 +31,28 @@ export function CandidateDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] p-0 gap-0 overflow-hidden glass-strong border-white/[0.1] bg-[hsl(220,38%,10%)]/95 backdrop-blur-2xl">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-white/[0.06]">
+      <DialogContent className="sm:max-w-[700px] p-0 gap-0 overflow-hidden glass-strong border-foreground/[0.1] bg-background/95 backdrop-blur-2xl">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-foreground/[0.06]">
           <DialogTitle className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.06] border border-white/[0.1]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground/[0.06] border border-foreground/[0.1]">
               {blindMode ? (
-                <User className="h-5 w-5 text-white/50" />
+                <User className="h-5 w-5 text-foreground/50" />
               ) : (
-                <span className="text-sm font-semibold text-white/80">
+                <span className="text-sm font-semibold text-foreground/80">
                   {candidate.fullName.split(" ").map((n) => n[0]).join("")}
                 </span>
               )}
             </div>
             <div>
-              <p className="text-base font-semibold text-white">{displayName}</p>
-              <p className="text-sm font-normal text-white/40">
+              <p className="text-base font-semibold text-foreground">{displayName}</p>
+              <p className="text-sm font-normal text-foreground/40">
                 {candidate.education} · {candidate.experience}
               </p>
             </div>
             {candidate.matchScore !== null && (
               <span className="ml-auto text-2xl font-bold text-primary">
                 {candidate.matchScore}%
-                <span className="ml-1 text-xs font-normal text-white/40">match</span>
+                <span className="ml-1 text-xs font-normal text-foreground/40">match</span>
               </span>
             )}
           </DialogTitle>
@@ -60,16 +60,16 @@ export function CandidateDetailModal({
 
         <div className="grid grid-cols-5 gap-0">
           {/* Left Column */}
-          <div className="col-span-3 border-r border-white/[0.06] p-6 space-y-5">
+          <div className="col-span-3 border-r border-foreground/[0.06] p-6 space-y-5">
             {/* AI Summary */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="h-4 w-4 text-white/60" />
-                <h3 className="text-sm font-semibold text-white">AI Summary</h3>
+                <Sparkles className="h-4 w-4 text-foreground/60" />
+                <h3 className="text-sm font-semibold text-foreground">AI Summary</h3>
               </div>
               <ul className="space-y-2">
                 {(candidate.aiSummary ?? []).map((point, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-white/50 leading-relaxed">
+                  <li key={i} className="flex gap-2 text-sm text-foreground/50 leading-relaxed">
                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
                     {point}
                   </li>
@@ -80,7 +80,7 @@ export function CandidateDetailModal({
             {/* Links */}
             {candidate.hasPortfolio && candidate.portfolioUrl && (
               <div>
-                <h3 className="text-sm font-semibold text-white mb-2">Links</h3>
+                <h3 className="text-sm font-semibold text-foreground mb-2">Links</h3>
                 <a
                   href={candidate.portfolioUrl}
                   target="_blank"
@@ -98,21 +98,21 @@ export function CandidateDetailModal({
           {/* Right Column */}
           <div className="col-span-2 p-6 space-y-5">
             <div>
-              <h3 className="text-sm font-semibold text-white mb-3">
+              <h3 className="text-sm font-semibold text-foreground mb-3">
                 Holland Code (RIASEC)
               </h3>
               {candidate.hollandCode ? (
                 <HollandChart distribution={candidate.hollandCode.distribution} />
               ) : (
-                <p className="text-sm text-white/30">Not available yet</p>
+                <p className="text-sm text-foreground/30">Not available yet</p>
               )}
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-white mb-2">Key Skills</h3>
+              <h3 className="text-sm font-semibold text-foreground mb-2">Key Skills</h3>
               <div className="flex flex-wrap gap-1.5">
                 {(candidate.skills ?? []).map((skill) => (
-                  <Badge key={skill} variant="secondary" className="text-[11px] font-medium bg-white/[0.06] border border-white/[0.08] text-white/70 hover:bg-white/[0.1]">
+                  <Badge key={skill} variant="secondary" className="text-[11px] font-medium bg-foreground/[0.06] border border-foreground/[0.08] text-foreground/70 hover:bg-foreground/[0.1]">
                     {skill}
                   </Badge>
                 ))}
@@ -122,13 +122,13 @@ export function CandidateDetailModal({
         </div>
 
         {/* Bottom Actions */}
-        <div className="flex gap-3 border-t border-white/[0.06] p-5">
+        <div className="flex gap-3 border-t border-foreground/[0.06] p-5">
           <Button className="flex-1 h-10 bg-primary/90 hover:bg-primary text-primary-foreground" onClick={onClose}>
             Send Interview Invite via Email
           </Button>
           <Button
             variant="outline"
-            className="h-10 glass-btn border-white/[0.1] text-white/80 hover:text-white"
+            className="h-10 glass-btn border-foreground/[0.1] text-foreground/80 hover:text-foreground"
             onClick={() => {
               onMarkDone(candidate.id);
               onClose();

@@ -6,6 +6,61 @@
 
 @layer base {
   :root {
+    /* Light Mode Variables */
+    --background: 0 0% 100%;
+    --foreground: 220 40% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 40% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 40% 10%;
+
+    --primary: 168 52% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 220 40% 10%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 220 40% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 168 52% 45%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Glass tokens (Light) */
+    --glass-bg: rgba(255, 255, 255, 0.45);
+    --glass-bg-hover: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.8);
+    --glass-border-hover: rgba(255, 255, 255, 1);
+    --glass-glow: rgba(43, 140, 126, 0.15);
+    --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.07), 0 2px 8px rgba(31, 38, 135, 0.04);
+    --glass-shadow-hover: 0 12px 40px rgba(31, 38, 135, 0.1), 0 4px 12px rgba(31, 38, 135, 0.06);
+
+    --glass-strong-bg: rgba(255, 255, 255, 0.65);
+    --glass-sidebar-bg: rgba(255, 255, 255, 0.65);
+  }
+
+  .dark {
+    /* Dark Mode Variables */
     --background: 220 40% 8%;
     --foreground: 210 40% 96%;
 
@@ -34,8 +89,6 @@
     --input: 220 30% 18%;
     --ring: 168 52% 45%;
 
-    --radius: 0.75rem;
-
     --sidebar-background: 220 45% 6%;
     --sidebar-foreground: 210 20% 75%;
     --sidebar-primary: 168 52% 50%;
@@ -45,18 +98,7 @@
     --sidebar-border: 220 30% 15%;
     --sidebar-ring: 168 52% 50%;
 
-    /* Custom tokens */
-    --teal: 168 52% 45%;
-    --teal-light: 168 40% 20%;
-    --teal-medium: 168 45% 55%;
-    --navy: 220 40% 8%;
-    --navy-light: 220 30% 20%;
-    --sky: 200 80% 55%;
-    --amber: 38 92% 55%;
-    --violet: 262 52% 55%;
-    --rose: 350 65% 55%;
-
-    /* Glass tokens */
+    /* Glass tokens (Dark) */
     --glass-bg: rgba(255, 255, 255, 0.04);
     --glass-bg-hover: rgba(255, 255, 255, 0.07);
     --glass-border: rgba(255, 255, 255, 0.08);
@@ -65,9 +107,8 @@
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
     --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
 
-    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
-    --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.25);
-    --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.5);
+    --glass-strong-bg: rgba(255, 255, 255, 0.06);
+    --glass-sidebar-bg: rgba(10, 15, 30, 0.85);
   }
 
   * {
@@ -80,11 +121,17 @@
   }
 }
 
-/* Blueprint Background */
+/* Blueprint Background (Responsive to Theme) */
 .blueprint-bg {
   background: 
-    linear-gradient(135deg, hsl(220, 45%, 6%) 0%, hsl(220, 40%, 10%) 40%, hsl(225, 35%, 14%) 70%, hsl(220, 45%, 8%) 100%);
+    radial-gradient(ellipse 800px 600px at 20% 20%, rgba(43, 140, 126, 0.1) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 400px at 80% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 70%),
+    linear-gradient(135deg, hsl(210, 20%, 98%) 0%, hsl(0, 0%, 100%) 100%);
   position: relative;
+}
+
+.dark .blueprint-bg {
+  background: linear-gradient(135deg, hsl(220, 45%, 6%) 0%, hsl(220, 40%, 10%) 40%, hsl(225, 35%, 14%) 70%, hsl(220, 45%, 8%) 100%);
 }
 
 .blueprint-bg::before {
@@ -92,11 +139,17 @@
   position: fixed;
   inset: 0;
   background-image: 
-    linear-gradient(rgba(43, 140, 126, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(43, 140, 126, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(43, 140, 126, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 140, 126, 0.1) 1px, transparent 1px);
   background-size: 60px 60px;
   pointer-events: none;
   z-index: 0;
+}
+
+.dark .blueprint-bg::before {
+  background-image: 
+    linear-gradient(rgba(43, 140, 126, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 140, 126, 0.04) 1px, transparent 1px);
 }
 
 .blueprint-bg::after {
@@ -104,12 +157,19 @@
   position: fixed;
   inset: 0;
   background: 
-    radial-gradient(ellipse 800px 600px at 20% 20%, rgba(43, 140, 126, 0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 600px 400px at 80% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 70%),
-    radial-gradient(ellipse 400px 300px at 50% 50%, rgba(139, 92, 246, 0.03) 0%, transparent 70%);
+    radial-gradient(ellipse 800px 600px at 20% 20%, rgba(43, 140, 126, 0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 400px at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 300px at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
   animation: plasma-drift 20s ease-in-out infinite alternate;
+}
+
+.dark .blueprint-bg::after {
+  background: 
+    radial-gradient(ellipse 800px 600px at 20% 20%, rgba(43, 140, 126, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 400px at 80% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 300px at 50% 50%, rgba(139, 92, 246, 0.03) 0%, transparent 70%);
 }
 
 @keyframes plasma-drift {
@@ -135,26 +195,34 @@
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-strong-bg);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.dark .glass-strong {
   box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .glass-sidebar {
-  background: rgba(10, 15, 30, 0.85);
+  background: var(--glass-sidebar-bg);
   backdrop-filter: blur(30px) saturate(180%);
   -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid var(--glass-border);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05);
+}
+
+.dark .glass-sidebar {
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
 }
 
 .glass-input {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: hsl(210, 40%, 96%);
+  border: 1px solid var(--glass-border);
+  color: hsl(var(--foreground));
 }
 
 .glass-input:focus {
@@ -163,28 +231,28 @@
 }
 
 .glass-input::placeholder {
-  color: hsl(215, 20%, 45%);
+  color: hsl(var(--muted-foreground));
 }
 
 .glass-btn {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: hsl(210, 40%, 96%);
+  border: 1px solid var(--glass-border);
+  color: hsl(var(--foreground));
   transition: all 0.2s ease;
 }
 
 .glass-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-hover);
 }
 
 .glass-badge {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: hsl(210, 40%, 90%);
+  border: 1px solid var(--glass-border);
+  color: hsl(var(--foreground) / 0.9);
 }
 
 /* Glow accents */
@@ -208,13 +276,23 @@
   inset: 0;
   background: linear-gradient(
     135deg,
+    rgba(43, 140, 126, 0.15) 0%,
+    transparent 40%,
+    rgba(59, 130, 246, 0.1) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+  animation: plasma-internal 8s ease-in-out infinite alternate;
+}
+
+.dark .glass-plasma::after {
+  background: linear-gradient(
+    135deg,
     rgba(43, 140, 126, 0.05) 0%,
     transparent 40%,
     rgba(59, 130, 246, 0.03) 60%,
     transparent 100%
   );
-  pointer-events: none;
-  animation: plasma-internal 8s ease-in-out infinite alternate;
 }
 
 @keyframes plasma-internal {

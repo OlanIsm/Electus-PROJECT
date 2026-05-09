@@ -3,7 +3,12 @@
 import { useEffect, useRef } from "react"
 import * as THREE from "three"
 
+import { useTheme } from "@/components/ThemeProvider"
+
 export function WebGLShader() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const sceneRef = useRef<{
     scene: THREE.Scene | null
@@ -42,6 +47,7 @@ export function WebGLShader() {
       uniform float xScale;
       uniform float yScale;
       uniform float distortion;
+      uniform float isDark;
 
       void main() {
         vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
@@ -56,15 +62,26 @@ export function WebGLShader() {
         float g = 0.04 / abs(p.y + sin((gx + time) * xScale) * yScale);
         float b = 0.05 / abs(p.y + sin((bx + time) * xScale) * yScale);
         
-        gl_FragColor = vec4(r * 0.3, g * 0.85, b * 0.9, 1.0);
+        if (isDark > 0.5) {
+          gl_FragColor = vec4(r * 0.3, g * 0.85, b * 0.9, 1.0);
+        } else {
+          // Light mode: inverse/subtle colors
+          gl_FragColor = vec4(r * 0.1, g * 0.6, b * 0.7, 0.4);
+        }
       }
     `
 
     const initScene = () => {
       refs.scene = new THREE.Scene()
-      refs.renderer = new THREE.WebGLRenderer({ canvas })
+      refs.renderer = new THREE.WebGLRenderer({ canvas, alpha: true })
       refs.renderer.setPixelRatio(window.devicePixelRatio)
-      refs.renderer.setClearColor(new THREE.Color(0x060a14))
+      
+      // Clear color based on theme
+      if (isDark) {
+        refs.renderer.setClearColor(new THREE.Color(0x060a14))
+      } else {
+        refs.renderer.setClearColor(new THREE.Color(0xf8fafc)) // Slate-50
+      }
 
       refs.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, -1)
 
@@ -74,6 +91,7 @@ export function WebGLShader() {
         xScale: { value: 1.0 },
         yScale: { value: 0.5 },
         distortion: { value: 0.05 },
+        isDark: { value: isDark ? 1.0 : 0.0 },
       }
 
       const position = [

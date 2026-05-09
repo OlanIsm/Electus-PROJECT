@@ -30,7 +30,7 @@ interface UploadFile {
 const statusConfig: Record<FileStatus, { label: string; className: string }> = {
   pending: {
     label: "Pending",
-    className: "bg-white/[0.06] text-white/50 border-white/[0.1]",
+    className: "bg-foreground/[0.06] text-foreground/50 border-foreground/[0.1]",
   },
   extracting: {
     label: "Uploading & Extracting...",
@@ -156,10 +156,10 @@ export default function BatchUpload() {
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8 animate-fade-in">
-        <h1 className="text-2xl font-semibold text-white tracking-tight">
+        <h1 className="text-2xl font-semibold text-foreground tracking-tight">
           Batch Upload Candidates
         </h1>
-        <p className="mt-1 text-sm text-white/40">
+        <p className="mt-1 text-sm text-foreground/40">
           Upload multiple PDF resumes. Our AI will automatically extract text,
           generate summaries, and vectorize them for semantic search.
         </p>
@@ -182,7 +182,7 @@ export default function BatchUpload() {
               ${
                 isDragOver
                   ? "border-primary bg-primary/[0.06] scale-[1.01]"
-                  : "border-white/[0.12] hover:border-primary/50 hover:bg-white/[0.02]"
+                  : "border-foreground/[0.12] hover:border-primary/50 hover:bg-foreground/[0.02]"
               }
             `}
           >
@@ -199,20 +199,20 @@ export default function BatchUpload() {
             />
             <div
               className={`rounded-full p-4 transition-colors ${
-                isDragOver ? "bg-primary/[0.12]" : "bg-white/[0.06]"
+                isDragOver ? "bg-primary/[0.12]" : "bg-foreground/[0.06]"
               }`}
             >
               <CloudUpload
                 className={`h-8 w-8 transition-colors ${
-                  isDragOver ? "text-primary" : "text-white/40"
+                  isDragOver ? "text-primary" : "text-foreground/40"
                 }`}
               />
             </div>
             <div className="text-center">
-              <p className="text-base font-semibold text-white">
+              <p className="text-base font-semibold text-foreground">
                 Click or drag to upload CVs
               </p>
-              <p className="mt-1 text-sm text-white/35">
+              <p className="mt-1 text-sm text-foreground/35">
                 Supports PDF, DOCX (Max 10MB per file)
               </p>
             </div>
@@ -220,7 +220,7 @@ export default function BatchUpload() {
 
           {/* Start button */}
           <div className="mt-6 flex items-center justify-between">
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-foreground/40">
               {files.length === 0
                 ? "No files selected"
                 : `${files.length} file${files.length > 1 ? "s" : ""} · ${pendingCount} pending · ${completedCount} completed`}
@@ -245,34 +245,34 @@ export default function BatchUpload() {
       {files.length > 0 && (
         <div className="glass rounded-xl animate-fade-in">
           <div className="px-6 pt-5 pb-4">
-            <h3 className="text-base font-semibold text-white">Processing Queue</h3>
+            <h3 className="text-base font-semibold text-foreground">Processing Queue</h3>
           </div>
           <div className="px-0 pb-0">
-            <div className="divide-y divide-white/[0.06]">
+            <div className="divide-y divide-foreground/[0.06]">
               {files.map((file) => {
                 const config = statusConfig[file.status];
                 return (
                   <div
                     key={file.id}
-                    className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-white/[0.02]"
+                    className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-foreground/[0.02]"
                   >
                     {/* Icon */}
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] border border-white/[0.08]">
-                      <FileText className="h-5 w-5 text-white/50" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-foreground/[0.06] border border-foreground/[0.08]">
+                      <FileText className="h-5 w-5 text-foreground/50" />
                     </div>
 
                     {/* File info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3">
-                        <p className="text-sm font-medium text-white truncate">
+                        <p className="text-sm font-medium text-foreground truncate">
                           {file.name}
                         </p>
-                        <span className="text-xs text-white/30 shrink-0">
+                        <span className="text-xs text-foreground/30 shrink-0">
                           {formatSize(file.size)}
                         </span>
                       </div>
                       <div className="mt-2">
-                        <Progress value={file.progress} className="h-1.5 bg-white/[0.06] [&>div]:bg-primary" />
+                        <Progress value={file.progress} className="h-1.5 bg-foreground/[0.06] [&>div]:bg-primary" />
                       </div>
                       {file.status === "error" && file.errorMessage && (
                         <p className="mt-1 text-xs text-destructive">{file.errorMessage}</p>
@@ -291,7 +291,7 @@ export default function BatchUpload() {
                     {/* Delete */}
                     <button
                       onClick={() => removeFile(file.id)}
-                      className="shrink-0 rounded-md p-1.5 text-white/30 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      className="shrink-0 rounded-md p-1.5 text-foreground/30 transition-colors hover:bg-destructive/10 hover:text-destructive"
                       disabled={file.status === "extracting"}
                     >
                       <Trash2 className="h-4 w-4" />

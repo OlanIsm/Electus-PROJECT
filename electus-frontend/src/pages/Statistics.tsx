@@ -26,11 +26,11 @@ const dateRanges = ["Last 7 Days", "Last 30 Days", "Last 90 Days", "This Year"];
 
 const GlassTooltipStyle = {
   borderRadius: "8px",
-  border: "1px solid rgba(255,255,255,0.1)",
+  border: "1px solid var(--glass-border)",
   fontSize: "12px",
-  boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-  backgroundColor: "hsl(220, 35%, 12%)",
-  color: "rgba(255,255,255,0.8)",
+  boxShadow: "var(--glass-shadow)",
+  backgroundColor: "var(--popover)",
+  color: "var(--popover-foreground)",
 };
 
 const HOLLAND_COLORS: Record<string, string> = {
@@ -127,7 +127,7 @@ const Statistics = () => {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-white/40 text-sm">Loading analytics...</p>
+          <p className="text-foreground/40 text-sm">Loading analytics...</p>
         </div>
       </DashboardLayout>
     );
@@ -137,11 +137,11 @@ const Statistics = () => {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-[70vh] animate-fade-in text-center">
-          <div className="w-16 h-16 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-6">
-            <BarChart className="w-8 h-8 text-white/20" />
+          <div className="w-16 h-16 rounded-full bg-foreground/[0.03] border border-foreground/[0.08] flex items-center justify-center mb-6">
+            <BarChart className="w-8 h-8 text-foreground/20" />
           </div>
-          <h2 className="text-xl font-semibold text-white mb-2">No data available</h2>
-          <p className="text-sm text-white/40 mb-8 max-w-sm">
+          <h2 className="text-xl font-semibold text-foreground mb-2">No data available</h2>
+          <p className="text-sm text-foreground/40 mb-8 max-w-sm">
             You have not submitted any CV yet. Start uploading candidate resumes to see AI-driven insights and analytics here.
           </p>
           <Button 
@@ -161,10 +161,10 @@ const Statistics = () => {
       {/* Header */}
       <div className="flex items-start justify-between mb-8 animate-fade-in">
         <div>
-          <h1 className="text-2xl font-semibold text-white">
+          <h1 className="text-2xl font-semibold text-foreground">
             Recruitment Analytics
           </h1>
-          <p className="mt-1 text-sm text-white/40">
+          <p className="mt-1 text-sm text-foreground/40">
             AI-driven insights from your candidate talent pool.
           </p>
         </div>
@@ -172,14 +172,14 @@ const Statistics = () => {
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="gap-2 text-sm font-medium glass-btn border-white/[0.1] text-white/80"
+              className="gap-2 text-sm font-medium glass-btn border-foreground/[0.1] text-foreground/80"
             >
               <Calendar className="h-4 w-4 text-primary" />
               {dateRange}
-              <ChevronDown className="h-3.5 w-3.5 text-white/40" />
+              <ChevronDown className="h-3.5 w-3.5 text-foreground/40" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-44 p-1 glass-strong border-white/[0.1] bg-[hsl(220,35%,12%)]" align="end">
+          <PopoverContent className="w-44 p-1 glass-strong border-foreground/[0.1] bg-popover" align="end">
             {dateRanges.map((r) => (
               <button
                 key={r}
@@ -187,10 +187,10 @@ const Statistics = () => {
                   setDateRange(r);
                   setDateOpen(false);
                 }}
-                className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-white/[0.06] ${
+                className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-foreground/[0.06] ${
                   r === dateRange
-                    ? "bg-white/[0.08] font-medium text-white"
-                    : "text-white/50"
+                    ? "bg-foreground/[0.08] font-medium text-foreground"
+                    : "text-foreground/50"
                 }`}
               >
                 {r}
@@ -205,8 +205,8 @@ const Statistics = () => {
         {/* Hiring Pipeline Funnel */}
         <div className="glass glass-plasma rounded-xl animate-fade-in">
           <div className="px-6 pt-5 pb-2">
-            <h3 className="text-base font-semibold text-white">Hiring Pipeline</h3>
-            <p className="text-xs text-white/40">Candidate drop-off through each stage</p>
+            <h3 className="text-base font-semibold text-foreground">Hiring Pipeline</h3>
+            <p className="text-xs text-foreground/40">Candidate drop-off through each stage</p>
           </div>
           <div className="px-6 pb-5">
             <ResponsiveContainer width="100%" height={260}>
@@ -233,8 +233,8 @@ const Statistics = () => {
         {/* Holland Code Distribution */}
         <div className="glass glass-plasma rounded-xl animate-fade-in">
           <div className="px-6 pt-5 pb-2">
-            <h3 className="text-base font-semibold text-white">Overall Talent Personality (RIASEC)</h3>
-            <p className="text-xs text-white/40">Holland Code distribution across all candidates</p>
+            <h3 className="text-base font-semibold text-foreground">Overall Talent Personality (RIASEC)</h3>
+            <p className="text-xs text-foreground/40">Holland Code distribution across all candidates</p>
           </div>
           <div className="px-6 pb-5 flex items-center justify-center">
             {stats!.hollandData.length > 0 ? (
@@ -251,14 +251,14 @@ const Statistics = () => {
                     iconType="circle"
                     iconSize={8}
                     formatter={(value: string) => (
-                      <span className="text-xs text-white/50 ml-1">{value}</span>
+                      <span className="text-xs text-foreground/50 ml-1">{value}</span>
                     )}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-[280px] flex items-center justify-center">
-                <p className="text-sm text-white/30">Not enough data</p>
+                <p className="text-sm text-foreground/30">Not enough data</p>
               </div>
             )}
           </div>
@@ -267,8 +267,8 @@ const Statistics = () => {
         {/* Top Skills */}
         <div className="glass glass-plasma rounded-xl animate-fade-in">
           <div className="px-6 pt-5 pb-2">
-            <h3 className="text-base font-semibold text-white">Most Common Skills Detected</h3>
-            <p className="text-xs text-white/40">Top skills extracted by AI from all CVs</p>
+            <h3 className="text-base font-semibold text-foreground">Most Common Skills Detected</h3>
+            <p className="text-xs text-foreground/40">Top skills extracted by AI from all CVs</p>
           </div>
           <div className="px-6 pb-5">
             {stats!.skillsData.length > 0 ? (
@@ -283,7 +283,7 @@ const Statistics = () => {
               </ResponsiveContainer>
             ) : (
               <div className="h-[260px] flex items-center justify-center">
-                <p className="text-sm text-white/30">No skills data available</p>
+                <p className="text-sm text-foreground/30">No skills data available</p>
               </div>
             )}
           </div>
@@ -292,13 +292,13 @@ const Statistics = () => {
         {/* AI Processing Time */}
         <div className="glass glass-plasma rounded-xl animate-fade-in">
           <div className="px-6 pt-5 pb-2">
-            <h3 className="text-base font-semibold text-white">AI Processing Time</h3>
-            <p className="text-xs text-white/40">Average parsing speed per CV this week</p>
+            <h3 className="text-base font-semibold text-foreground">AI Processing Time</h3>
+            <p className="text-xs text-foreground/40">Average parsing speed per CV this week</p>
           </div>
           <div className="px-6 pb-5">
             <div className="mb-4 flex items-baseline gap-2">
               <span className="text-4xl font-bold text-primary">2.4s</span>
-              <span className="text-sm text-white/40">avg. per CV</span>
+              <span className="text-sm text-foreground/40">avg. per CV</span>
             </div>
             <ResponsiveContainer width="100%" height={180}>
               <LineChart data={processingData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
