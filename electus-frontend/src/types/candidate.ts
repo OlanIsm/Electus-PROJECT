@@ -16,5 +16,6 @@ export interface Candidate {
   experience: string;
   aiSummary: string[];
   cvText?: string;
+  embedding?: number[];
   createdAt?: string;
 }

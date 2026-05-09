@@ -34,7 +34,7 @@ const Landing = () => {
               Login
             </button>
             <button
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/signup")}
               className="text-sm font-medium text-white border border-white/20 rounded-full px-5 py-2 hover:bg-white/10 transition-all"
             >
               Sign Up
@@ -44,8 +44,8 @@ const Landing = () => {
       </nav>
 
       {/* Hero Content */}
-      <div className="relative border border-[#27272a]/50 p-2 w-full mx-auto max-w-3xl z-10">
-        <main className="relative border border-[#27272a]/50 py-16 overflow-hidden">
+      <div className="relative w-full mx-auto max-w-3xl z-10">
+        <main className="relative py-16 overflow-hidden">
           {/* Badge */}
           <div className="flex justify-center mb-6">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-teal-500/20 bg-teal-500/5 text-teal-300 text-xs font-medium">

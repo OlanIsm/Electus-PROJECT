@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   ParseUUIDPipe,
   UseInterceptors,
   UploadedFile,
@@ -43,6 +44,13 @@ export class CandidatesController {
   uploadCv(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No file uploaded');
     return this.candidatesService.uploadCv(file);
+  }
+
+  // GET /candidates/search?q=...  — Semantic Search (RAG)
+  @Get('search')
+  search(@Query('q') query: string) {
+    if (!query?.trim()) return this.candidatesService.findAll();
+    return this.candidatesService.semanticSearch(query);
   }
 
   // GET /candidates
