@@ -63,6 +63,10 @@ export class Candidate {
   @Column({ nullable: true })
   cvFilePath: string;
 
+  // Vector embedding for semantic search (stored as JSON float array)
+  @Column({ type: 'simple-json', nullable: true })
+  embedding: number[];
+
   @CreateDateColumn()
   createdAt: Date;
 }

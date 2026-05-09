@@ -33,6 +33,7 @@ const Index = () => {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [confirmAction, setConfirmAction] = useState<'all' | 'duplicates' | 'pending' | 'reviewed' | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [searching, setSearching] = useState(false);
 
   // Fetch candidates from backend API
   useEffect(() => {
@@ -51,6 +52,31 @@ const Index = () => {
     }
   };
 
+  // Debounced semantic search
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (!q) {
+      // Reset to normal list when search is cleared
+      fetchCandidates();
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`${API_URL}/candidates/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        setCandidates(data);
+      } catch (err) {
+        console.error("Semantic search failed:", err);
+      } finally {
+        setSearching(false);
+      }
+    }, 600); // 600ms debounce
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
   const searchActive = searchQuery.trim().length > 0;
 
   const filtered = useMemo(() => {
@@ -58,22 +84,9 @@ const Index = () => {
       if (educationFilter !== "all" && c.education !== educationFilter) return false;
       if (experienceFilter !== "all" && c.experience !== experienceFilter) return false;
       if (statusFilter !== "all" && c.reviewStatus !== statusFilter) return false;
-      if (searchActive) {
-        const q = searchQuery.toLowerCase();
-        const haystack = [
-          c.fullName,
-          ...(c.skills ?? []),
-          c.hollandCode?.label ?? "",
-          c.education ?? "",
-          c.experience ?? "",
-        ]
-          .join(" ")
-          .toLowerCase();
-        if (!haystack.includes(q)) return false;
-      }
       return true;
     });
-  }, [candidates, searchQuery, educationFilter, experienceFilter, statusFilter, searchActive]);
+  }, [candidates, educationFilter, experienceFilter, statusFilter]);
 
   // Toggle status via backend PATCH API
   const toggleStatus = async (id: string) => {

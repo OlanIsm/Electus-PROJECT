@@ -144,4 +144,66 @@ Rules:
       },
     };
   }
+
+  /**
+   * Generate a vector embedding for text using Ollama's embedding API.
+   * Uses the same model (gemma3:1b) so no extra model download needed.
+   */
+  async generateEmbedding(text: string): Promise<number[]> {
+    const payload = {
+      model: 'nomic-embed-text',
+      input: text.slice(0, 4000),
+    };
+
+    try {
+      // Try /api/embed first (newer Ollama versions)
+      let response = await fetch('http://localhost:11434/api/embed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      // Fallback to /api/embeddings (older Ollama versions)
+      if (response.status === 404) {
+        response = await fetch('http://localhost:11434/api/embeddings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: payload.model, prompt: payload.input }),
+        });
+      }
+
+      if (!response.ok) {
+        console.warn(`Embedding generation failed: ${response.status}`);
+        return [];
+      }
+
+      const data = await response.json();
+      // Handle both response formats
+      return data.embeddings?.[0] ?? data.embedding ?? [];
+    } catch (err) {
+      console.warn('Embedding generation failed:', err);
+      return [];
+    }
+  }
+
+  /**
+   * Calculate cosine similarity between two vectors.
+   * Returns a value between 0 (no similarity) and 1 (identical).
+   */
+  cosineSimilarity(a: number[], b: number[]): number {
+    if (!a?.length || !b?.length || a.length !== b.length) return 0;
+
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+
+    for (let i = 0; i < a.length; i++) {
+      dotProduct += a[i] * b[i];
+      normA += a[i] * a[i];
+      normB += b[i] * b[i];
+    }
+
+    const denominator = Math.sqrt(normA) * Math.sqrt(normB);
+    return denominator === 0 ? 0 : dotProduct / denominator;
+  }
 }

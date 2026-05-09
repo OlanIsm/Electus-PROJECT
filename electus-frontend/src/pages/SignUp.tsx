@@ -4,12 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
 
-const Login = () => {
+const SignUp = () => {
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, handle authentication here
+    // In a real app, handle registration here
     // For now, just navigate to the dashboard
     navigate('/dashboard');
   };
@@ -33,11 +33,22 @@ const Login = () => {
             <div className="flex justify-center mb-4">
               <img src="/Logo.png" alt="Electus Logo" className="h-10 w-auto object-contain rounded-md" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Welcome back</h1>
-            <p className="text-sm text-white/40">Enter your credentials to access your account</p>
+            <h1 className="text-2xl font-bold text-white mb-2">Create your account</h1>
+            <p className="text-sm text-white/40">Get started with Electus ATS for free</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleSignUp} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="fullname" className="text-white/80">Full name</Label>
+              <Input 
+                id="fullname" 
+                type="text" 
+                placeholder="John Doe" 
+                className="bg-white/[0.03] border-white/[0.1] text-white placeholder:text-white/20 focus:border-teal-500/50"
+                required 
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white/80">Email address</Label>
               <Input 
@@ -50,10 +61,7 @@ const Login = () => {
             </div>
             
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-white/80">Password</Label>
-                <a href="#" className="text-xs text-teal-400 hover:text-teal-300">Forgot password?</a>
-              </div>
+              <Label htmlFor="password" className="text-white/80">Password</Label>
               <Input 
                 id="password" 
                 type="password" 
@@ -63,14 +71,27 @@ const Login = () => {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password" className="text-white/80">Confirm password</Label>
+              <Input 
+                id="confirm-password" 
+                type="password" 
+                placeholder="••••••••" 
+                className="bg-white/[0.03] border-white/[0.1] text-white placeholder:text-white/20 focus:border-teal-500/50"
+                required 
+              />
+            </div>
+
             <Button type="submit" className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 glow-teal text-sm font-medium mt-2">
-              Sign In
+              Create Account
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm text-white/40">
-            Don't have an account?{" "}
-            <button onClick={() => navigate('/signup')} className="text-teal-400 hover:text-teal-300 font-medium">Sign up</button>
+            Already have an account?{" "}
+            <button onClick={() => navigate('/login')} className="text-teal-400 hover:text-teal-300 font-medium">
+              Sign in
+            </button>
           </div>
         </div>
       </div>
@@ -78,4 +99,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;
