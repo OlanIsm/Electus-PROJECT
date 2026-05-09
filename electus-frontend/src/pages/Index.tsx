@@ -137,7 +137,7 @@ const Index = () => {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-white/40 text-sm">Loading candidates...</p>
+          <p className="text-foreground/40 text-sm">Loading candidates...</p>
         </div>
       </DashboardLayout>
     );
@@ -148,19 +148,17 @@ const Index = () => {
       {/* Header */}
       <div className="flex items-start justify-between mb-6 animate-fade-in">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Welcome back, HR Team</h1>
-          <p className="mt-1 text-sm text-white/40">
+          <h1 className="text-2xl font-semibold text-foreground">Welcome back, HR Team</h1>
+          <p className="mt-1 text-sm text-foreground/40">
             Manage your candidates and track hiring progress.
           </p>
         </div>
         <div className="flex items-center gap-3 rounded-xl glass px-4 py-3">
           <div className="text-right">
-            <Label htmlFor="blind-mode" className="text-sm font-medium text-white/80 cursor-pointer">
+            <Label htmlFor="blind-mode" className="text-sm font-medium text-foreground/80 cursor-pointer">
               Blind Screening
             </Label>
-            <p className="text-[11px] text-white/35">
-              Hide names & photos for unbiased hiring
-            </p>
+            <p className="text-[11px] text-foreground/40 mt-0.5">Hide candidate names</p>
           </div>
           <Switch
             id="blind-mode"
@@ -186,13 +184,13 @@ const Index = () => {
 
       {/* Bulk Actions */}
       <div className="mb-6 flex flex-wrap gap-2 animate-fade-in">
-        <Button variant="outline" size="sm" onClick={() => setConfirmAction('duplicates')} className="h-8 text-xs border-white/[0.1] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white">
+        <Button variant="outline" size="sm" onClick={() => setConfirmAction('duplicates')} className="h-8 text-xs border-foreground/[0.1] bg-foreground/[0.04] text-foreground/70 hover:bg-foreground/[0.08] hover:text-foreground">
           <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Remove Duplicates
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setConfirmAction('pending')} className="h-8 text-xs border-white/[0.1] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white">
+        <Button variant="outline" size="sm" onClick={() => setConfirmAction('pending')} className="h-8 text-xs border-foreground/[0.1] bg-foreground/[0.04] text-foreground/70 hover:bg-foreground/[0.08] hover:text-foreground">
           <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Clear Pending
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setConfirmAction('reviewed')} className="h-8 text-xs border-white/[0.1] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white">
+        <Button variant="outline" size="sm" onClick={() => setConfirmAction('reviewed')} className="h-8 text-xs border-foreground/[0.1] bg-foreground/[0.04] text-foreground/70 hover:bg-foreground/[0.08] hover:text-foreground">
           <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Clear Reviewed
         </Button>
         <Button variant="outline" size="sm" onClick={() => setConfirmAction('all')} className="h-8 text-xs border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 ml-auto">
@@ -232,10 +230,10 @@ const Index = () => {
 
       {/* Confirmation Dialog */}
       <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && !isDeleting && setConfirmAction(null)}>
-        <AlertDialogContent className="glass-strong border-white/[0.1] bg-[hsl(220,38%,10%)] text-white">
+        <AlertDialogContent className="glass-strong border-foreground/[0.1] bg-background text-foreground">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-white/60">
+            <AlertDialogDescription className="text-foreground/60">
               {confirmAction === 'all' && "This will permanently delete ALL candidates from the database. This action cannot be undone."}
               {confirmAction === 'duplicates' && "This will remove all duplicate candidates, keeping only the most recently uploaded copy for each name."}
               {confirmAction === 'pending' && "This will permanently delete all candidates that are currently marked as 'Pending Review'."}
@@ -243,7 +241,7 @@ const Index = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting} className="bg-white/[0.04] border-white/[0.1] text-white hover:bg-white/[0.08] hover:text-white">
+            <AlertDialogCancel disabled={isDeleting} className="bg-foreground/[0.04] border-foreground/[0.1] text-foreground hover:bg-foreground/[0.08] hover:text-foreground">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
@@ -252,7 +250,7 @@ const Index = () => {
                 e.preventDefault(); 
                 executeBulkAction(); 
               }} 
-              className="bg-red-500/80 text-white hover:bg-red-500"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting ? "Deleting..." : "Yes, I'm sure"}
             </AlertDialogAction>

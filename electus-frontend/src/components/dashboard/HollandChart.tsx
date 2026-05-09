@@ -30,11 +30,11 @@ export function HollandChart({ distribution }: HollandChartProps) {
             ]}
             contentStyle={{
               borderRadius: "8px",
-              border: "1px solid rgba(255,255,255,0.1)",
+              border: "1px solid var(--glass-border)",
               fontSize: "12px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-              backgroundColor: "hsl(220, 35%, 12%)",
-              color: "rgba(255,255,255,0.8)",
+              boxShadow: "var(--glass-shadow)",
+              backgroundColor: "var(--popover)",
+              color: "var(--popover-foreground)",
             }}
           />
         </PieChart>
@@ -46,7 +46,7 @@ export function HollandChart({ distribution }: HollandChartProps) {
               className="h-2.5 w-2.5 rounded-full"
               style={{ backgroundColor: d.color }}
             />
-            <span className="text-[11px] text-white/50">
+            <span className="text-[11px] text-foreground/50">
               {d.code} – {d.label}
             </span>
           </div>

@@ -15,7 +15,8 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen blueprint-bg flex items-center justify-center p-6 selection:bg-teal-500/30">
+    <div className="dark">
+      <div className="text-foreground min-h-screen blueprint-bg flex items-center justify-center p-6 selection:bg-teal-500/30">
       
       {/* Decorative Background */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg h-[500px] bg-teal-500/10 blur-[100px] rounded-full pointer-events-none" />
@@ -23,77 +24,78 @@ const SignUp = () => {
       <div className="w-full max-w-md relative z-10 animate-fade-in">
         <button 
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-sm text-white/50 hover:text-white mb-8 transition-colors"
+          className="flex items-center gap-2 text-sm text-foreground/50 hover:text-foreground mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </button>
 
-        <div className="glass-strong border border-white/[0.08] p-8 rounded-2xl shadow-2xl bg-[#0A0F1C]/80 backdrop-blur-xl">
+        <div className="glass-strong border border-foreground/[0.08] p-8 rounded-2xl shadow-2xl bg-background/80 backdrop-blur-xl">
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <img src="/Logo.png" alt="Electus Logo" className="h-10 w-auto object-contain rounded-md" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Create your account</h1>
-            <p className="text-sm text-white/40">Get started with Electus ATS for free</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Create your account</h1>
+            <p className="text-sm text-foreground/40">Get started with Electus ATS for free</p>
           </div>
 
           <form onSubmit={handleSignUp} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="fullname" className="text-white/80">Full name</Label>
+              <Label htmlFor="fullname" className="text-foreground/80">Full name</Label>
               <Input 
                 id="fullname" 
                 type="text" 
                 placeholder="John Doe" 
-                className="bg-white/[0.03] border-white/[0.1] text-white placeholder:text-white/20 focus:border-teal-500/50"
+                className="bg-foreground/[0.03] border-foreground/[0.1] text-foreground placeholder:text-foreground/20 focus:border-teal-500/50"
                 required 
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white/80">Email address</Label>
+              <Label htmlFor="email" className="text-foreground/80">Email address</Label>
               <Input 
                 id="email" 
                 type="email" 
                 placeholder="name@company.com" 
-                className="bg-white/[0.03] border-white/[0.1] text-white placeholder:text-white/20 focus:border-teal-500/50"
+                className="bg-foreground/[0.03] border-foreground/[0.1] text-foreground placeholder:text-foreground/20 focus:border-teal-500/50"
                 required 
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-white/80">Password</Label>
+              <Label htmlFor="password" className="text-foreground/80">Password</Label>
               <Input 
                 id="password" 
                 type="password" 
                 placeholder="••••••••" 
-                className="bg-white/[0.03] border-white/[0.1] text-white placeholder:text-white/20 focus:border-teal-500/50"
+                className="bg-foreground/[0.03] border-foreground/[0.1] text-foreground placeholder:text-foreground/20 focus:border-teal-500/50"
                 required 
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirm-password" className="text-white/80">Confirm password</Label>
+              <Label htmlFor="confirm-password" className="text-foreground/80">Confirm password</Label>
               <Input 
                 id="confirm-password" 
                 type="password" 
                 placeholder="••••••••" 
-                className="bg-white/[0.03] border-white/[0.1] text-white placeholder:text-white/20 focus:border-teal-500/50"
+                className="bg-foreground/[0.03] border-foreground/[0.1] text-foreground placeholder:text-foreground/20 focus:border-teal-500/50"
                 required 
               />
             </div>
 
-            <Button type="submit" className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 glow-teal text-sm font-medium mt-2">
+            <Button type="submit" className="w-full bg-teal-500 hover:bg-teal-400 text-white font-medium shadow-[0_0_20px_rgba(20,184,166,0.3)] mt-2">
               Create Account
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-white/40">
+          <div className="mt-6 text-center text-sm text-foreground/40">
             Already have an account?{" "}
             <button onClick={() => navigate('/login')} className="text-teal-400 hover:text-teal-300 font-medium">
               Sign in
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

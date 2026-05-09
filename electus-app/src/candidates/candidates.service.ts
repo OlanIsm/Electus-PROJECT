@@ -166,8 +166,18 @@ export class CandidatesService {
         ...(c.aiSummary ?? []),
       ].join(' ').toLowerCase();
 
-      if (haystack.includes(queryLower)) {
-        textScore = 0.5; // Boost for text match
+      // Better text match: score based on keyword matches
+      const keywords = queryLower.split(/\s+/).filter((w) => w.length > 3);
+      if (keywords.length > 0) {
+        let matchedKeywords = 0;
+        for (const word of keywords) {
+          if (haystack.includes(word)) {
+            matchedKeywords++;
+          }
+        }
+        textScore = (matchedKeywords / keywords.length) * 0.5; // Max 0.5 from text
+      } else if (haystack.includes(queryLower)) {
+        textScore = 0.5;
       }
 
       const combinedScore = Math.max(semanticScore, textScore);

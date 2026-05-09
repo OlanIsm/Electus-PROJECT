@@ -32,20 +32,20 @@ export function SearchFilterBar({
   return (
     <div className="flex flex-wrap items-center gap-3 animate-fade-in">
       <div className="relative flex-1 min-w-[280px]">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
         <Input
           placeholder="Search candidates by context, skills, or roles..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10 h-10 glass-input border-white/[0.08] bg-white/[0.04] text-white placeholder:text-white/30"
+          className="pl-10 h-10 glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground placeholder:text-foreground/30"
         />
       </div>
 
       <Select value={educationFilter} onValueChange={onEducationChange}>
-        <SelectTrigger className="w-[160px] h-10 glass-input border-white/[0.08] bg-white/[0.04] text-white/80">
+        <SelectTrigger className="w-[160px] h-10 glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground/80">
           <SelectValue placeholder="Education Level" />
         </SelectTrigger>
-        <SelectContent className="glass-strong border-white/[0.1] bg-[hsl(220,35%,12%)]">
+        <SelectContent className="glass-strong border-foreground/[0.1] bg-popover">
           <SelectItem value="all">All Education</SelectItem>
           <SelectItem value="Bachelor's">Bachelor's</SelectItem>
           <SelectItem value="Master's">Master's</SelectItem>
@@ -55,10 +55,10 @@ export function SearchFilterBar({
       </Select>
 
       <Select value={experienceFilter} onValueChange={onExperienceChange}>
-        <SelectTrigger className="w-[160px] h-10 glass-input border-white/[0.08] bg-white/[0.04] text-white/80">
+        <SelectTrigger className="w-[160px] h-10 glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground/80">
           <SelectValue placeholder="Experience Level" />
         </SelectTrigger>
-        <SelectContent className="glass-strong border-white/[0.1] bg-[hsl(220,35%,12%)]">
+        <SelectContent className="glass-strong border-foreground/[0.1] bg-popover">
           <SelectItem value="all">All Experience</SelectItem>
           <SelectItem value="Junior">Junior</SelectItem>
           <SelectItem value="Mid-level">Mid-level</SelectItem>
@@ -67,10 +67,10 @@ export function SearchFilterBar({
       </Select>
 
       <Select value={statusFilter} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-[150px] h-10 glass-input border-white/[0.08] bg-white/[0.04] text-white/80">
+        <SelectTrigger className="w-[150px] h-10 glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground/80">
           <SelectValue placeholder="Review Status" />
         </SelectTrigger>
-        <SelectContent className="glass-strong border-white/[0.1] bg-[hsl(220,35%,12%)]">
+        <SelectContent className="glass-strong border-foreground/[0.1] bg-popover">
           <SelectItem value="all">All Status</SelectItem>
           <SelectItem value="pending">Pending</SelectItem>
           <SelectItem value="reviewed">Reviewed</SelectItem>
