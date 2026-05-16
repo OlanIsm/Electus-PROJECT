@@ -2,21 +2,16 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Candidate } from './candidate.entity';
-import { GeminiService } from './gemini.service';
-
-// pdf-parse@1.1.1 exports directly as a callable function
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse') as (buffer: Buffer) => Promise<{ text: string; numpages: number }>;
-
-// mammoth for DOCX extraction
-import * as mammoth from 'mammoth';
+import { AiService } from '../ai/ai.service';
+import { DocumentsService } from '../documents/documents.service';
 
 @Injectable()
 export class CandidatesService {
   constructor(
     @InjectRepository(Candidate)
     private candidateRepository: Repository<Candidate>,
-    private geminiService: GeminiService,
+    private aiService: AiService,
+    private documentsService: DocumentsService,
   ) {}
 
   async create(data: Partial<Candidate>) {
@@ -53,13 +48,19 @@ export class CandidatesService {
   }
 
   async removeByStatus(status: string) {
-    const result = await this.candidateRepository.delete({ reviewStatus: status });
-    return { message: `Deleted ${result.affected ?? 0} candidates with status "${status}"` };
+    const result = await this.candidateRepository.delete({
+      reviewStatus: status,
+    });
+    return {
+      message: `Deleted ${result.affected ?? 0} candidates with status "${status}"`,
+    };
   }
 
   async removeDuplicates() {
     // Group by fullName, keep only the latest (newest createdAt)
-    const all = await this.candidateRepository.find({ order: { createdAt: 'DESC' } });
+    const all = await this.candidateRepository.find({
+      order: { createdAt: 'DESC' },
+    });
     const seen = new Map<string, boolean>();
     const toDelete: string[] = [];
 
@@ -85,26 +86,13 @@ export class CandidatesService {
    * 3. Saves fully enriched candidate to DB
    */
   async uploadCv(file: Express.Multer.File): Promise<Candidate> {
-    // Step 1: Extract text
-    let cvText = '';
-    if (file.mimetype === 'application/pdf') {
-      const parsed = await pdfParse(file.buffer);
-      cvText = parsed.text;
-    } else if (
-      file.mimetype ===
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ) {
-      const result = await mammoth.extractRawText({ buffer: file.buffer });
-      cvText = result.value;
-    } else {
-      cvText = `[File: ${file.originalname}] - Unsupported format.`;
-    }
+    const cvText = await this.documentsService.extractText(file);
 
     // Step 2: Analyze with Gemini
-    const analysis = await this.geminiService.analyzeCv(cvText);
+    const analysis = await this.aiService.analyzeCv(cvText);
 
     // Step 3: Generate vector embedding for semantic search
-    const embedding = await this.geminiService.generateEmbedding(cvText);
+    const embedding = await this.aiService.generateEmbedding(cvText);
 
     // Step 4: Save to DB
     const candidate = this.candidateRepository.create({
@@ -136,15 +124,19 @@ export class CandidatesService {
       order: { createdAt: 'DESC' },
     });
 
-    console.log(`[Search] Query: "${query}", Total candidates: ${allCandidates.length}`);
+    console.log(
+      `[Search] Query: "${query}", Total candidates: ${allCandidates.length}`,
+    );
 
     const queryLower = query.toLowerCase();
 
     // Step 1: Try to generate query embedding
-    const queryEmbedding = await this.geminiService.generateEmbedding(query);
+    const queryEmbedding = await this.aiService.generateEmbedding(query);
     const hasQueryEmbedding = queryEmbedding.length > 0;
 
-    console.log(`[Search] Query embedding generated: ${hasQueryEmbedding} (${queryEmbedding.length} dims)`);
+    console.log(
+      `[Search] Query embedding generated: ${hasQueryEmbedding} (${queryEmbedding.length} dims)`,
+    );
 
     // Step 2: Score each candidate
     const scored = allCandidates.map((c) => {
@@ -153,7 +145,10 @@ export class CandidatesService {
 
       // Semantic score (if both query and candidate have embeddings)
       if (hasQueryEmbedding && c.embedding?.length > 0) {
-        semanticScore = this.geminiService.cosineSimilarity(queryEmbedding, c.embedding);
+        semanticScore = this.aiService.cosineSimilarity(
+          queryEmbedding,
+          c.embedding,
+        );
       }
 
       // Text-based score — search the FULL CV text + structured fields
@@ -164,7 +159,9 @@ export class CandidatesService {
         c.education ?? '',
         c.experience ?? '',
         ...(c.aiSummary ?? []),
-      ].join(' ').toLowerCase();
+      ]
+        .join(' ')
+        .toLowerCase();
 
       // Better text match: score based on keyword matches
       const keywords = queryLower.split(/\s+/).filter((w) => w.length > 3);
@@ -184,9 +181,11 @@ export class CandidatesService {
       return { candidate: c, score: combinedScore };
     });
 
-    // Step 3: Filter out zero-score and sort by score descending
+    // Step 3: Filter out low-relevance noise and sort by score descending
+    // Cosine similarity baseline is ~0.2-0.4 for unrelated text, so we
+    // require at least 0.40 (40%) to consider a candidate a real match.
     const results = scored
-      .filter(({ score }) => score > 0.01)
+      .filter(({ score }) => score > 0.40)
       .sort((a, b) => b.score - a.score);
 
     console.log(`[Search] Results found: ${results.length}`);

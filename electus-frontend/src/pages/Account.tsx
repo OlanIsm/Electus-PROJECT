@@ -16,6 +16,14 @@ const themes = ["light", "dark", "system"] as const;
 export default function Account() {
   const { theme, setTheme } = useTheme();
   const [emailNotifications, setEmailNotifications] = useState(true);
+  const [fullName, setFullName] = useState(() => localStorage.getItem('electus-user-name') || 'Sarah Chen');
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    localStorage.setItem('electus-user-name', fullName);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
 
   return (
     <DashboardLayout>
@@ -42,7 +50,7 @@ export default function Account() {
               <div className="flex flex-col items-center gap-2 pt-1">
                 <Avatar className="h-20 w-20 border-2 border-foreground/[0.1]">
                   <AvatarFallback className="bg-foreground/[0.06] text-foreground text-xl font-semibold">
-                    SC
+                    {fullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <button className="text-xs font-medium text-primary hover:underline">
@@ -56,7 +64,7 @@ export default function Account() {
                   <Label htmlFor="fullName" className="text-xs text-foreground/60 flex items-center gap-1.5">
                     <User className="h-3 w-3" /> Full Name
                   </Label>
-                  <Input id="fullName" defaultValue="Sarah Chen" className="glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground" />
+                  <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} className="glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground" />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="email" className="text-xs text-foreground/60 flex items-center gap-1.5">
@@ -79,8 +87,9 @@ export default function Account() {
               </div>
             </div>
 
-            <div className="flex justify-end mt-6">
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            <div className="flex items-center justify-end gap-3 mt-6">
+              {saved && <span className="text-sm text-primary font-medium animate-fade-in">✓ Saved!</span>}
+              <Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 Save Changes
               </Button>
             </div>
