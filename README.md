@@ -1,15 +1,16 @@
-# 🚀 Electus: AI-Powered Applicant Tracking System (ATS)
+# Electus: AI-Powered Applicant Tracking System (ATS)
+<img width="1893" height="1004" alt="image" src="https://github.com/user-attachments/assets/7b60959a-9c3e-45a1-90ea-6624d3cc9808" />
 
 Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolutionize the hiring process. Built for modern HR teams, Electus goes beyond simple keyword matching by implementing **Retrieval-Augmented Generation (RAG)** and Hybrid Semantic Search. It understands the *context* of a candidate's CV and matches them accurately to complex queries using vector embeddings and cosine similarity.
 
-## ✨ Key Features
+## Key Features
 
-* 🧠 **Hybrid Semantic Search (RAG):** Powered by Ollama Embeddings (`nomic-embed-text`) and cosine similarity scoring. Search for candidates using natural language (e.g., *"Find a detail-oriented backend developer with leadership skills"*). Combines vector-based semantic search with full-text search for maximum accuracy.
-* 📄 **Automated CV Processing:** Instantly extracts text from uploaded **PDFs** (via `pdf-parse`) and **DOCX** files (via `mammoth`), then generates an AI Summary, Skills Extraction, and Holland Code (RIASEC) personality assessment for every candidate using a local LLM.
-* ⚖️ **Unbiased Hiring (Blind Screening):** A built-in toggle to hide candidate names and photos, promoting objective and equitable talent acquisition.
-* 📊 **Smart Dashboard Analytics:** Real-time metrics and talent pool insights (Hiring Pipeline, Skill Distribution, Holland Code Distribution) calculated dynamically from the database and displayed in a responsive Bento-box layout.
-* 💎 **Liquid Glass UI:** A highly polished, futuristic Glassmorphism interface with a WebGL-powered animated landing page that delivers a premium user experience.
-* 🗑️ **Bulk Management:** Bulk delete tools (Delete All, Remove Duplicates, Clear by Status) with confirmation dialogs to prevent accidental data loss.
+*  **Hybrid Semantic Search (RAG):** Powered by Ollama Embeddings (`nomic-embed-text`) and cosine similarity scoring. Search for candidates using natural language (e.g., *"Find a detail-oriented backend developer with leadership skills"*). Combines vector-based semantic search with full-text search for maximum accuracy.
+*  **Automated CV Processing:** Instantly extracts text from uploaded **PDFs** (via `pdf-parse`) and **DOCX** files (via `mammoth`), then generates an AI Summary, Skills Extraction, and Holland Code (RIASEC) personality assessment for every candidate using a local LLM.
+*  **Unbiased Hiring (Blind Screening):** A built-in toggle to hide candidate names and photos, promoting objective and equitable talent acquisition.
+*  **Smart Dashboard Analytics:** Real-time metrics and talent pool insights (Hiring Pipeline, Skill Distribution, Holland Code Distribution) calculated dynamically from the database and displayed in a responsive Bento-box layout.
+* **Liquid Glass UI:** A highly polished, futuristic Glassmorphism interface with a WebGL-powered animated landing page that delivers a premium user experience.
+*  **Bulk Management:** Bulk delete tools (Delete All, Remove Duplicates, Clear by Status) with confirmation dialogs to prevent accidental data loss.
 
 ## 🛠️ Tech Stack
 
