@@ -12,7 +12,7 @@ Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolu
 * **Liquid Glass UI:** A highly polished, futuristic Glassmorphism interface with a WebGL-powered animated landing page that delivers a premium user experience.
 *  **Bulk Management:** Bulk delete tools (Delete All, Remove Duplicates, Clear by Status) with confirmation dialogs to prevent accidental data loss.
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 **Frontend:**
 * React 18 / Vite
@@ -30,7 +30,7 @@ Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolu
 * Mammoth (DOCX text extraction)
 * pdf-parse (PDF text extraction)
 
-## 🏗️ System Architecture (RAG Pipeline)
+##  System Architecture (RAG Pipeline)
 
 ```
 ┌──────────────┐    ┌──────────────────┐    ┌─────────────────────────┐
