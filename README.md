@@ -1,5 +1,5 @@
 # Electus: AI-Powered Applicant Tracking System (ATS)
-<img width="1893" height="1004" alt="image" src="https://github.com/user-attachments/assets/7b60959a-9c3e-45a1-90ea-6624d3cc9808" />
+<img width="1294" height="810" alt="image" src="https://github.com/user-attachments/assets/6fc3191d-2f4f-4fc4-842f-1bf02b8b4108" />
 
 Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolutionize the hiring process. Built for modern HR teams, Electus goes beyond simple keyword matching by implementing **Retrieval-Augmented Generation (RAG)** and Hybrid Semantic Search. It understands the *context* of a candidate's CV and matches them accurately to complex queries using vector embeddings and cosine similarity.
 
