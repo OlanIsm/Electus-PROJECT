@@ -154,7 +154,7 @@ export default function Account() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-foreground">Electus Enterprise Plan</p>
+                    <p className="text-sm font-semibold text-foreground">Professional Plan</p>
                     <Badge className="bg-primary/20 text-primary border-0 text-[10px] font-semibold hover:bg-primary/20">
                       ACTIVE
                     </Badge>
@@ -162,9 +162,12 @@ export default function Account() {
                   <p className="text-xs text-foreground/40 mt-0.5">Billed monthly · Next invoice on Apr 1, 2026</p>
                 </div>
               </div>
-              <p className="text-2xl font-bold text-foreground">
-                $199<span className="text-sm font-normal text-foreground/60">/mo</span>
-              </p>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-foreground">
+                  $25
+                </p>
+                <p className="text-xs font-normal text-foreground/60">/per user per month</p>
+              </div>
             </div>
 
             {/* Usage Bar */}
