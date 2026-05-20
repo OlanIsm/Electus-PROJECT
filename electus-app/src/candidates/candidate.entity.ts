@@ -16,6 +16,9 @@ export class Candidate {
   @Column({ nullable: true })
   email: string;
 
+  @Column({ nullable: true })
+  phone: string;
+
   @Column({ default: 'pending' })
   reviewStatus: string;
 

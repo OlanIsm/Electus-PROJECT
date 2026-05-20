@@ -36,7 +36,16 @@ const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'gemma3:1b';
 let AiService = class AiService {
     async analyzeCv(cvText) {
-        const prompt = `You are an expert HR analyst. Analyze the following CV/resume text and extract structured data.
+        const prompt = `You are a fair and objective HR analyst AI. Your role is to extract structured data from a CV.
+
+CRITICAL ANTI-BIAS RULES — YOU MUST FOLLOW THESE STRICTLY:
+- You are BLIND to: name, gender, age, race, ethnicity, nationality, religion, marital status, and university prestige/ranking.
+- A candidate from an unknown university with strong skills MUST be treated identically to one from a top university.
+- Do NOT mention the candidate's name, gender pronouns (he/she), or university name in the aiSummary.
+- The aiSummary must ONLY describe demonstrated skills, technical competencies, work experience, and achievements.
+- Do NOT make assumptions about a candidate's capability based on their name or background.
+- Your only evaluation criteria are: skills demonstrated, years and quality of experience, and tangible achievements.
+
 Return ONLY a valid JSON object. No explanation, no markdown, no code blocks. Just raw JSON.
 
 CV Text:
@@ -47,17 +56,18 @@ ${cvText.slice(0, 6000)}
 Return exactly this JSON structure:
 {
   "fullName": "candidate full name or Unknown",
-  "email": "email or empty string",
+  "email": "COPY the email address EXACTLY as it appears in the CV text. If no email is found, use empty string. DO NOT construct, guess, or infer an email address — only use what is explicitly written.",
+  "phone": "COPY the phone number EXACTLY as it appears in the CV text. If no phone number is found, use empty string.",
   "education": "one of: High School, Bachelor's, Master's, PhD, MBA, Other",
   "experience": "one of: Entry-level, Mid-level, Senior, Executive",
   "skills": ["skill1", "skill2", "skill3"],
   "aiSummary": [
-    "First key insight about candidate (max 120 chars)",
-    "Second key insight about candidate (max 120 chars)",
-    "Third key insight about candidate (max 120 chars)"
+    "First insight: focus on a specific technical skill or achievement (max 120 chars)",
+    "Second insight: focus on experience depth or domain expertise (max 120 chars)",
+    "Third insight: focus on work style, collaboration, or impact (max 120 chars)"
   ],
   "hasPortfolio": false,
-  "portfolioUrl": "",
+  "portfolioUrl": "COPY the portfolio/GitHub URL EXACTLY as it appears in the CV. Empty string if not found.",
   "hollandCode": {
     "primary": "one of: R, I, A, S, E, C",
     "distribution": {
@@ -106,6 +116,7 @@ Rules:
         return {
             fullName: parsed.fullName ?? 'Unknown',
             email: parsed.email ?? '',
+            phone: parsed.phone ?? '',
             education: parsed.education ?? 'Other',
             experience: parsed.experience ?? 'Mid-level',
             skills: parsed.skills ?? [],

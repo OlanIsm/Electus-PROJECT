@@ -98,6 +98,7 @@ export class CandidatesService {
     const candidate = this.candidateRepository.create({
       fullName: analysis.fullName,
       email: analysis.email,
+      phone: analysis.phone,
       cvText,
       reviewStatus: 'pending',
       skills: analysis.skills,
