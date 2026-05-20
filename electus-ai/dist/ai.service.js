@@ -33,7 +33,7 @@ const HOLLAND_PERSONALITY = {
     C: 'Organizer',
 };
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'gemma3:1b';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.1';
 let AiService = class AiService {
     async analyzeCv(cvText) {
         const prompt = `You are a fair and objective HR analyst AI. Your role is to extract structured data from a CV.
@@ -64,10 +64,12 @@ Return exactly this JSON structure:
   "aiSummary": [
     "First insight: focus on a specific technical skill or achievement (max 120 chars)",
     "Second insight: focus on experience depth or domain expertise (max 120 chars)",
-    "Third insight: focus on work style, collaboration, or impact (max 120 chars)"
+    "Third insight: focus on work style, collaboration, or impact (max 120 chars)",
+    "Fourth insight: focus on notable projects, leadership, or problem-solving (max 120 chars)",
+    "Fifth insight: focus on education, certifications, or unique strengths (max 120 chars)"
   ],
   "hasPortfolio": false,
-  "portfolioUrl": "COPY the portfolio/GitHub URL EXACTLY as it appears in the CV. Empty string if not found.",
+  "portfolioUrl": "COPY the portfolio, GitHub, Vercel, or personal website URL EXACTLY as it appears in the CV. Empty string if not found.",
   "hollandCode": {
     "primary": "one of: R, I, A, S, E, C",
     "distribution": {
@@ -83,9 +85,10 @@ Return exactly this JSON structure:
 
 Rules:
 - skills: 3 to 6 most relevant skills only
-- aiSummary: 3 specific, concise insights
+- aiSummary: 5 specific, concise insights
 - distribution values must sum to 100
-- hasPortfolio: true only if GitHub or portfolio URL found
+- hasPortfolio: MUST be set to true if a portfolio or code link is found in the CV text.
+- portfolioUrl: Extract the exact link FROM THE CV TEXT. DO NOT invent links. DO NOT use examples. If no link is in the CV, use an empty string.
 - Return ONLY the JSON, nothing else`;
         const response = await fetch(`${OLLAMA_URL}/api/generate`, {
             method: 'POST',

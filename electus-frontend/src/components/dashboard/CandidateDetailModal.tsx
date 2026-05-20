@@ -156,7 +156,7 @@ export function CandidateDetailModal({
                 <div>
                   <h3 className="text-sm font-semibold text-foreground mb-2">Links</h3>
                   <a
-                    href={candidate.portfolioUrl}
+                    href={candidate.portfolioUrl.startsWith('http') ? candidate.portfolioUrl : `https://${candidate.portfolioUrl}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"

@@ -1,17 +1,18 @@
-# 🚀 Electus: AI-Powered Applicant Tracking System (ATS)
+#  Electus: AI-Powered Applicant Tracking System (ATS)
+
 
 Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolutionize the hiring process. Built for modern HR teams, Electus goes beyond simple keyword matching by implementing **Retrieval-Augmented Generation (RAG)** and Hybrid Semantic Search. It understands the *context* of a candidate's CV and matches them accurately to complex queries using vector embeddings and cosine similarity.
 
-## ✨ Key Features
+##  Key Features
 
-* 🧠 **Hybrid Semantic Search (RAG):** Powered by Ollama Embeddings (`nomic-embed-text`) and cosine similarity scoring. Search for candidates using natural language (e.g., *"Find a detail-oriented backend developer with leadership skills"*). Combines vector-based semantic search with full-text search for maximum accuracy.
-* 📄 **Automated CV Processing:** Instantly extracts text from uploaded **PDFs** (via `pdf-parse`) and **DOCX** files (via `mammoth`), then generates an AI Summary, Skills Extraction, and Holland Code (RIASEC) personality assessment for every candidate using a local LLM.
-* ⚖️ **Unbiased Hiring (Blind Screening):** A built-in toggle to hide candidate names and photos, promoting objective and equitable talent acquisition.
-* 📊 **Smart Dashboard Analytics:** Real-time metrics and talent pool insights (Hiring Pipeline, Skill Distribution, Holland Code Distribution) calculated dynamically from the database and displayed in a responsive Bento-box layout.
-* 💎 **Liquid Glass UI:** A highly polished, futuristic Glassmorphism interface with a WebGL-powered animated landing page that delivers a premium user experience.
-* 🗑️ **Bulk Management:** Bulk delete tools (Delete All, Remove Duplicates, Clear by Status) with confirmation dialogs to prevent accidental data loss.
+*  **Hybrid Semantic Search (RAG):** Powered by Ollama Embeddings (`nomic-embed-text`) and cosine similarity scoring. Search for candidates using natural language (e.g., *"Find a detail-oriented backend developer with leadership skills"*). Combines vector-based semantic search with full-text search for maximum accuracy.
+*  **Automated CV Processing:** Instantly extracts text from uploaded **PDFs** (via `pdf-parse`) and **DOCX** files (via `mammoth`), then generates an AI Summary, Skills Extraction, and Holland Code (RIASEC) personality assessment for every candidate using a local LLM.
+*  **Unbiased Hiring (Blind Screening):** A built-in toggle to hide candidate names and photos, promoting objective and equitable talent acquisition.
+*  **Smart Dashboard Analytics:** Real-time metrics and talent pool insights (Hiring Pipeline, Skill Distribution, Holland Code Distribution) calculated dynamically from the database and displayed in a responsive Bento-box layout.
+*  **Liquid Glass UI:** A highly polished, futuristic Glassmorphism interface with a WebGL-powered animated landing page that delivers a premium user experience.
+*  **Bulk Management:** Bulk delete tools (Delete All, Remove Duplicates, Clear by Status) with confirmation dialogs to prevent accidental data loss.
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 **Frontend:**
 * React 18 / Vite
@@ -27,11 +28,11 @@ Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolu
 * NestJS Document Service (`electus-documents`)
 * TypeORM
 * PostgreSQL
-* Ollama (Local LLM — `gemma3:1b` for CV analysis, `nomic-embed-text` for vector embeddings)
+* Ollama (Local LLM — `llama3.1` for CV analysis, `nomic-embed-text` for vector embeddings)
 * Mammoth (DOCX text extraction)
 * pdf-parse v2 (PDF text extraction)
 
-## 🏗️ System Architecture (Microservice RAG Pipeline)
+##  System Architecture (Microservice RAG Pipeline)
 
 ```
 ┌──────────────┐    ┌────────────────────────────┐
@@ -50,7 +51,7 @@ Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolu
                             ▼
                     ┌─────────────────────┐      ┌─────────────────────────┐
                     │ electus-ai          │─────▶│ Ollama (Local AI)       │
-                    │ CV analysis + embed │◀─────│ gemma3:1b + nomic-embed│
+                    │ CV analysis + embed │◀─────│ llama3.1 + nomic-embed│
                     │ :3002               │      │ :11434                 │
                     └─────────────────────┘      └─────────────────────────┘
                             │
@@ -68,7 +69,7 @@ Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolu
 2. **Retrieval:** HR enters a semantic query → query is vectorized through `electus-ai` → cosine similarity is computed against stored candidate embeddings → combined with full-text search for hybrid scoring.
 3. **Ranking:** Candidates are sorted by combined semantic + text match score → `matchScore` (0-100%) is returned to the frontend for display. The score is a ranking signal, not an absolute hiring confidence.
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -80,7 +81,7 @@ Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolu
 
 ```bash
 # Install and pull required models
-ollama pull gemma3:1b          # For CV analysis (~815MB)
+ollama pull llama3.1          # For CV analysis (~815MB)
 ollama pull nomic-embed-text   # For vector embeddings (~274MB)
 
 # Ensure Ollama is running
@@ -138,7 +139,7 @@ Optional Ollama settings for `electus-ai`:
 
 ```bash
 OLLAMA_URL=http://localhost:11434
-OLLAMA_MODEL=gemma3:1b
+OLLAMA_MODEL=llama3.1
 ```
 
 ### 4. Setup Frontend
@@ -158,7 +159,7 @@ npm run dev
 
 Navigate to `http://localhost:8080` in your browser. You'll see the landing page — click **Try App** to get started!
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 electus-project/
@@ -208,7 +209,7 @@ electus-project/
 └── README.md
 ```
 
-## 📡 API Endpoints
+##  API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -233,7 +234,7 @@ electus-project/
 | `electus-documents` | `POST` | `/documents/extract` | Extract text from base64 JSON file payload |
 | `electus-documents` | `POST` | `/documents/extract-file` | Extract text from multipart PDF/DOCX upload |
 
-## 🧪 Running Tests
+##  Running Tests
 
 ```bash
 cd electus-app
@@ -242,4 +243,4 @@ npm run test
 
 ---
 
-*Built with ❤️ for a smarter hiring future.*
+*Built with  for a smarter hiring future.*

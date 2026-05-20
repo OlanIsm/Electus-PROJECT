@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 export interface CvAnalysis {
   fullName: string;
   email: string;
+  phone?: string;
   education: string;
   experience: string;
   skills: string[];
