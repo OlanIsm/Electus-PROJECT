@@ -14,11 +14,15 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CandidatesService } from './candidates.service';
+import { EmailService } from './email.service';
 import { Candidate } from './candidate.entity';
 
 @Controller('candidates')
 export class CandidatesController {
-  constructor(private readonly candidatesService: CandidatesService) {}
+  constructor(
+    private readonly candidatesService: CandidatesService,
+    private readonly emailService: EmailService,
+  ) {}
 
   // POST /candidates
   @Post()
@@ -32,11 +36,17 @@ export class CandidatesController {
     FileInterceptor('file', {
       limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
       fileFilter: (_, file, cb) => {
-        const allowed = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        const allowed = [
+          'application/pdf',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
         if (allowed.includes(file.mimetype)) {
           cb(null, true);
         } else {
-          cb(new BadRequestException('Only PDF and DOCX files are allowed'), false);
+          cb(
+            new BadRequestException('Only PDF and DOCX files are allowed'),
+            false,
+          );
         }
       },
     }),
@@ -96,5 +106,32 @@ export class CandidatesController {
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.candidatesService.remove(id);
+  }
+
+  // POST /candidates/:id/invite — send interview invite email
+  @Post(':id/invite')
+  async sendInvite(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: { jobTitle: string; interviewDate: string; hrName: string; customMessage?: string },
+  ) {
+    const candidate = await this.candidatesService.findOne(id);
+    if (!candidate.email) {
+      return { success: false, message: 'Candidate has no email address on record.' };
+    }
+    const result = await this.emailService.sendInterviewInvite(
+      candidate.fullName,
+      candidate.email,
+      body.jobTitle,
+      body.interviewDate,
+      body.hrName,
+      body.customMessage,
+    );
+    return {
+      success: true,
+      sentTo: candidate.email,
+      messageId: result.messageId,
+      // previewUrl is only present in Ethereal demo mode
+      previewUrl: result.previewUrl ?? null,
+    };
   }
 }

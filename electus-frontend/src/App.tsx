@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import Pricing from "./pages/Pricing";
 
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/upload" element={<BatchUpload />} />
             <Route path="/statistics" element={<Statistics />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/pricing" element={<Pricing />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

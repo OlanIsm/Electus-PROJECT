@@ -22,24 +22,41 @@ Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolu
 * Recharts (Analytics charts)
 * Three.js (WebGL shader for landing page)
 
-**Backend:**
-* NestJS (Node.js framework)
+**Backend / Services:**
+* NestJS API Gateway (`electus-app`)
+* NestJS AI Service (`electus-ai`)
+* NestJS Document Service (`electus-documents`)
 * TypeORM
 * PostgreSQL
-* Ollama (Local LLM — `gemma3:1b` for CV analysis, `nomic-embed-text` for vector embeddings)
+* Ollama (Local LLM — `llama3.1` for CV analysis, `nomic-embed-text` for vector embeddings)
 * Mammoth (DOCX text extraction)
-* pdf-parse (PDF text extraction)
+* pdf-parse v2 (PDF text extraction)
 
 ##  System Architecture (RAG Pipeline)
 
 ```
-┌──────────────┐    ┌──────────────────┐    ┌─────────────────────────┐
-│  Frontend    │───▶│  NestJS Backend  │───▶│  Ollama (Local LLM)     │
-│  React/Vite  │◀───│  REST API        │◀───│  gemma3:1b + nomic-embed│
-│  :8080       │    │  :3000           │    │  :11434                 │
-└──────────────┘    └────────┬─────────┘    └─────────────────────────┘
-                             │
-                    ┌────────▼─────────┐
+┌──────────────┐    ┌────────────────────────────┐
+│  Frontend    │───▶│  electus-app               │
+│  React/Vite  │◀───│  API Gateway + Candidates  │
+│  :8080/:5173 │    │  :3000                     │
+└──────────────┘    └───────┬───────────┬────────┘
+                            │           │
+                            │           ▼
+                            │   ┌─────────────────────┐
+                            │   │ electus-documents   │
+                            │   │ PDF/DOCX extraction │
+                            │   │ :3003               │
+                            │   └─────────────────────┘
+                            │
+                            ▼
+                    ┌─────────────────────┐      ┌─────────────────────────┐
+                    │ electus-ai          │─────▶│ Ollama (Local AI)       │
+                    │ CV analysis + embed │◀─────│ llama3.1 + nomic-embed│
+                    │ :3002               │      │ :11434                 │
+                    └─────────────────────┘      └─────────────────────────┘
+                            │
+                            ▼
+                    ┌──────────────────┐
                     │   PostgreSQL     │
                     │   Candidates DB  │
                     │   + Embeddings   │
@@ -48,11 +65,11 @@ Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolu
 
 ### Pipeline Flow
 
-1. **Ingestion:** CVs (PDF/DOCX) are uploaded → Text extracted → `gemma3:1b` generates structured analysis (skills, summary, Holland Code) → `nomic-embed-text` generates vector embedding → All data stored in PostgreSQL.
-2. **Retrieval:** HR enters a semantic query → Query is vectorized via `nomic-embed-text` → Cosine similarity is computed against all candidate embeddings → Combined with full-text search for hybrid scoring.
-3. **Ranking:** Candidates are sorted by combined semantic + text match score → `matchScore` (0-100%) is returned to the frontend for display.
+1. **Ingestion:** CVs (PDF/DOCX) are uploaded to `electus-app` → file is sent to `electus-documents` for text extraction → extracted text is sent to `electus-ai` for structured analysis → `nomic-embed-text` generates vector embeddings → candidate data is stored in PostgreSQL by `electus-app`.
+2. **Retrieval:** HR enters a semantic query → query is vectorized through `electus-ai` → cosine similarity is computed against stored candidate embeddings → combined with full-text search for hybrid scoring.
+3. **Ranking:** Candidates are sorted by combined semantic + text match score → `matchScore` (0-100%) is returned to the frontend for display. The score is a ranking signal, not an absolute hiring confidence.
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -64,7 +81,7 @@ Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolu
 
 ```bash
 # Install and pull required models
-ollama pull gemma3:1b          # For CV analysis (~815MB)
+ollama pull llama3.1          # For CV analysis (~815MB)
 ollama pull nomic-embed-text   # For vector embeddings (~274MB)
 
 # Ensure Ollama is running
@@ -78,7 +95,7 @@ ollama serve
 psql -U postgres -c "CREATE DATABASE electus;"
 ```
 
-### 3. Setup Backend
+### 3. Setup Backend Services
 
 ```bash
 cd electus-app
@@ -92,7 +109,37 @@ cp .env.example .env
 
 # Start the development server
 npm run start:dev
-# Backend runs on http://localhost:3000
+# API Gateway runs on http://localhost:3000
+```
+
+In separate terminals, start the supporting services:
+
+```bash
+cd electus-ai
+npm install
+npm run start:dev
+# AI Service runs on http://localhost:3002
+```
+
+```bash
+cd electus-documents
+npm install
+npm run start:dev
+# Document Service runs on http://localhost:3003
+```
+
+Optional service URLs for `electus-app`:
+
+```bash
+AI_SERVICE_URL=http://localhost:3002
+DOCUMENT_SERVICE_URL=http://localhost:3003
+```
+
+Optional Ollama settings for `electus-ai`:
+
+```bash
+OLLAMA_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.1
 ```
 
 ### 4. Setup Frontend
@@ -112,18 +159,34 @@ npm run dev
 
 Navigate to `http://localhost:8080` in your browser. You'll see the landing page — click **Try App** to get started!
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 electus-project/
-├── electus-app/                    # Backend (NestJS)
+├── electus-app/                    # API Gateway + Candidates service (NestJS)
 │   └── src/
+│       ├── ai/                          # Client for electus-ai
 │       ├── candidates/
 │       │   ├── candidate.entity.ts      # Database schema
 │       │   ├── candidates.controller.ts # REST API endpoints
 │       │   ├── candidates.service.ts    # Business logic + Search
 │       │   ├── candidates.module.ts     # Module definition
-│       │   └── gemini.service.ts        # AI integration (Ollama)
+│       │   └── gemini.service.ts        # Backward-compatible AI service alias
+│       ├── documents/                   # Client for electus-documents
+│       ├── app.module.ts
+│       └── main.ts
+│
+├── electus-ai/                     # AI Service (NestJS + Ollama)
+│   └── src/
+│       ├── ai.controller.ts             # /ai/analyze, /ai/embed
+│       ├── ai.service.ts                # Ollama CV analysis + embeddings
+│       ├── app.module.ts
+│       └── main.ts
+│
+├── electus-documents/              # Document Service (NestJS)
+│   └── src/
+│       ├── documents.controller.ts      # /documents/extract, /documents/extract-file
+│       ├── documents.service.ts         # PDF/DOCX text extraction
 │       ├── app.module.ts
 │       └── main.ts
 │
@@ -146,7 +209,7 @@ electus-project/
 └── README.md
 ```
 
-## 📡 API Endpoints
+##  API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -160,7 +223,18 @@ electus-project/
 | `DELETE` | `/candidates/duplicates` | Remove duplicate entries |
 | `DELETE` | `/candidates/status/:status` | Delete by status |
 
-## 🧪 Running Tests
+### Internal Service Endpoints
+
+| Service | Method | Endpoint | Description |
+|---------|--------|----------|-------------|
+| `electus-ai` | `GET` | `/ai/health` | AI service health check |
+| `electus-ai` | `POST` | `/ai/analyze` | Analyze extracted CV text |
+| `electus-ai` | `POST` | `/ai/embed` | Generate text embedding |
+| `electus-documents` | `GET` | `/documents/health` | Document service health check |
+| `electus-documents` | `POST` | `/documents/extract` | Extract text from base64 JSON file payload |
+| `electus-documents` | `POST` | `/documents/extract-file` | Extract text from multipart PDF/DOCX upload |
+
+##  Running Tests
 
 ```bash
 cd electus-app

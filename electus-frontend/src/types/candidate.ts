@@ -2,6 +2,7 @@ export interface Candidate {
   id: string;
   fullName: string;
   email: string;
+  phone?: string;
   skills: string[];
   hollandCode: {
     primary: string;

@@ -12,7 +12,7 @@ const Landing = () => {
       <WebGLShader />
 
       {/* Top Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-foreground/[0.06]">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-foreground/[0.06]" style={{ background: "rgba(8,10,20,0.7)", backdropFilter: "blur(16px)" }}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/Logo.png" alt="Electus Logo" className="h-7 w-auto object-contain rounded-md" />
@@ -21,8 +21,8 @@ const Landing = () => {
 
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-foreground/50">
             <a href="#" className="text-foreground transition-colors">Home</a>
-            <a href="#" className="hover:text-foreground transition-colors">Service</a>
-            <a href="#" className="hover:text-foreground transition-colors">About Us</a>
+            <a href="#" className="hover:text-foreground transition-colors">Features</a>
+            <a href="/pricing" className="hover:text-foreground transition-colors">Pricing</a>
             <a href="#" className="hover:text-foreground transition-colors">FAQ</a>
           </div>
 

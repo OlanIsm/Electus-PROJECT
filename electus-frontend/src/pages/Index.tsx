@@ -28,6 +28,7 @@ const Index = () => {
   const [blindMode, setBlindMode] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [educationFilter, setEducationFilter] = useState("all");
+  const userName = localStorage.getItem('electus-user-name') || 'HR Team';
   const [experienceFilter, setExperienceFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
@@ -148,7 +149,7 @@ const Index = () => {
       {/* Header */}
       <div className="flex items-start justify-between mb-6 animate-fade-in">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Welcome back, HR Team</h1>
+          <h1 className="text-2xl font-semibold text-foreground">Welcome back, {userName}</h1>
           <p className="mt-1 text-sm text-foreground/40">
             Manage your candidates and track hiring progress.
           </p>

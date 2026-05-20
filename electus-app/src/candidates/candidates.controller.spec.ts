@@ -50,7 +50,9 @@ describe('CandidatesController', () => {
     it('should call semanticSearch if query is provided', async () => {
       mockCandidatesService.semanticSearch.mockResolvedValue([]);
       await controller.search('react');
-      expect(mockCandidatesService.semanticSearch).toHaveBeenCalledWith('react');
+      expect(mockCandidatesService.semanticSearch).toHaveBeenCalledWith(
+        'react',
+      );
     });
   });
 });
