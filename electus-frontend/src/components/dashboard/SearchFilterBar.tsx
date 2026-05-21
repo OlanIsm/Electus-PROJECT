@@ -37,12 +37,12 @@ export function SearchFilterBar({
           placeholder="Search candidates by context, skills, or roles..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10 h-10 glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground placeholder:text-foreground/30"
+          className="pl-10 h-10 border border-primary/20 hover:border-primary/40 focus:border-primary/60 focus-visible:border-primary/60 focus-visible:ring-1 focus-visible:ring-primary/30 bg-primary/[0.04] hover:bg-primary/[0.07] dark:bg-primary/[0.06] dark:hover:bg-primary/[0.09] text-foreground placeholder:text-foreground/45 transition-all duration-200 backdrop-blur-md"
         />
       </div>
 
       <Select value={educationFilter} onValueChange={onEducationChange}>
-        <SelectTrigger className="w-[160px] h-10 glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground/80">
+        <SelectTrigger className="w-[160px] h-10 border border-primary/20 hover:border-primary/40 focus:border-primary/60 focus:ring-1 focus:ring-primary/30 bg-primary/[0.04] hover:bg-primary/[0.07] dark:bg-primary/[0.06] dark:hover:bg-primary/[0.09] text-foreground/80 transition-all duration-200 backdrop-blur-md">
           <SelectValue placeholder="Education Level" />
         </SelectTrigger>
         <SelectContent className="glass-strong border-foreground/[0.1] bg-popover">
@@ -55,7 +55,7 @@ export function SearchFilterBar({
       </Select>
 
       <Select value={experienceFilter} onValueChange={onExperienceChange}>
-        <SelectTrigger className="w-[160px] h-10 glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground/80">
+        <SelectTrigger className="w-[160px] h-10 border border-primary/20 hover:border-primary/40 focus:border-primary/60 focus:ring-1 focus:ring-primary/30 bg-primary/[0.04] hover:bg-primary/[0.07] dark:bg-primary/[0.06] dark:hover:bg-primary/[0.09] text-foreground/80 transition-all duration-200 backdrop-blur-md">
           <SelectValue placeholder="Experience Level" />
         </SelectTrigger>
         <SelectContent className="glass-strong border-foreground/[0.1] bg-popover">
@@ -67,7 +67,7 @@ export function SearchFilterBar({
       </Select>
 
       <Select value={statusFilter} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-[150px] h-10 glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground/80">
+        <SelectTrigger className="w-[150px] h-10 border border-primary/20 hover:border-primary/40 focus:border-primary/60 focus:ring-1 focus:ring-primary/30 bg-primary/[0.04] hover:bg-primary/[0.07] dark:bg-primary/[0.06] dark:hover:bg-primary/[0.09] text-foreground/80 transition-all duration-200 backdrop-blur-md">
           <SelectValue placeholder="Review Status" />
         </SelectTrigger>
         <SelectContent className="glass-strong border-foreground/[0.1] bg-popover">

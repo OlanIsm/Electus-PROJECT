@@ -14,7 +14,7 @@ export function AppSidebar() {
       {/* Logo */}
       <div className="flex flex-col gap-1 px-5 py-6 border-b border-foreground/[0.06]">
         <div className="flex items-center gap-2">
-          <img src="/Logo.png" alt="Electus Logo" className="h-8 w-auto object-contain rounded-md" />
+          <img src="/Logo.png" alt="Electus Logo" className="h-10 w-auto object-contain rounded-md" />
         </div>
         <span className="text-[11px] font-medium text-foreground/40 tracking-wide uppercase">
           AI-Powered ATS

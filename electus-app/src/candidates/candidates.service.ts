@@ -79,28 +79,15 @@ export class CandidatesService {
     return { message: `Removed ${toDelete.length} duplicate candidates` };
   }
 
-  /**
-   * Handles PDF/DOCX upload:
-   * 1. Extracts text from PDF
-   * 2. Sends text to Gemini for analysis
-   * 3. Saves fully enriched candidate to DB
-   */
   async uploadCv(file: Express.Multer.File): Promise<Candidate> {
     const cvText = await this.documentsService.extractText(file);
-
-    // Step 2: Analyze with Gemini
     const analysis = await this.aiService.analyzeCv(cvText);
-
-    // Step 3: Generate vector embedding for semantic search
     const embedding = await this.aiService.generateEmbedding(cvText);
 
-    // Step 4: Save to DB
     const candidate = this.candidateRepository.create({
       fullName: analysis.fullName,
       email: analysis.email,
       phone: analysis.phone,
-      cvText,
-      reviewStatus: 'pending',
       skills: analysis.skills,
       aiSummary: analysis.aiSummary,
       hollandCode: analysis.hollandCode,
@@ -109,8 +96,11 @@ export class CandidatesService {
       hasPortfolio: analysis.hasPortfolio,
       portfolioUrl: analysis.portfolioUrl,
       embedding,
+      reviewStatus: 'pending',
+      processingStatus: 'done',
+      cvText,
     });
-
+    
     return this.candidateRepository.save(candidate);
   }
 
@@ -199,5 +189,69 @@ export class CandidatesService {
       delete plain.embedding;
       return plain;
     });
+  }
+
+  // Unique Feature: Culture-Fit Matcher
+  async getCultureFit(id: string, targetStr?: string) {
+    const candidate = await this.findOne(id);
+    if (!candidate.hollandCode || !candidate.hollandCode.distribution) {
+      return { score: 0, target: {}, matchDetails: [] };
+    }
+
+    // Default Company Target Culture (e.g. Innovative Tech Startup)
+    // Values represent ideal percentage distribution
+    let TARGET_CULTURE: Record<string, number> = {
+      I: 30, // Thinker / Problem Solver
+      A: 25, // Creator / Innovator
+      R: 20, // Builder / Doer
+      E: 15, // Persuader / Leader
+      S: 5,  // Helper
+      C: 5   // Organizer
+    };
+
+    if (targetStr) {
+      try {
+        const customTarget: Record<string, number> = {};
+        const pairs = targetStr.split(',');
+        for (const pair of pairs) {
+          const [key, val] = pair.split(':');
+          if (key && val) {
+            customTarget[key.trim().toUpperCase()] = Math.max(0, Math.min(100, parseFloat(val.trim())));
+          }
+        }
+        if (Object.keys(customTarget).length > 0) {
+          TARGET_CULTURE = customTarget;
+        }
+      } catch (err) {
+        // Fallback to default TARGET_CULTURE
+      }
+    }
+
+    let totalDifference = 0;
+    const matchDetails: any[] = [];
+
+    for (const dist of candidate.hollandCode.distribution) {
+      const targetValue = TARGET_CULTURE[dist.code] || 0;
+      const diff = Math.abs(dist.value - targetValue);
+      totalDifference += diff;
+      
+      matchDetails.push({
+        code: dist.code,
+        label: dist.label,
+        candidateValue: dist.value,
+        targetValue,
+        gap: targetValue - dist.value
+      });
+    }
+
+    // Max possible difference is 200 (e.g., 100 in one trait, 0 in target, and vice versa)
+    // Convert to a 0-100% fit score
+    const score = Math.max(0, Math.round(100 - (totalDifference / 2)));
+
+    return {
+      score,
+      target: TARGET_CULTURE,
+      matchDetails: matchDetails.sort((a, b) => b.candidateValue - a.candidateValue)
+    };
   }
 }

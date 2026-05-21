@@ -134,4 +134,23 @@ export class CandidatesController {
       previewUrl: result.previewUrl ?? null,
     };
   }
+
+  @Get(':id/status')
+  async getProcessingStatus(@Param('id', ParseUUIDPipe) id: string) {
+    const candidate = await this.candidatesService.findOne(id);
+    return {
+      id: candidate.id,
+      processingStatus: candidate.processingStatus,
+      fullName: candidate.fullName
+    };
+  }
+
+  // GET /candidates/:id/culture-fit
+  @Get(':id/culture-fit')
+  async getCultureFit(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('target') target?: string,
+  ) {
+    return this.candidatesService.getCultureFit(id, target);
+  }
 }

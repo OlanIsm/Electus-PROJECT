@@ -22,6 +22,10 @@ export class Candidate {
   @Column({ default: 'pending' })
   reviewStatus: string;
 
+  // Track async AI processing status: 'pending', 'processing', 'done', 'error'
+  @Column({ default: 'done' })
+  processingStatus: string;
+
   // AI-generated 3-point summary stored as JSON array
   @Column({ type: 'simple-json', nullable: true })
   aiSummary: string[];

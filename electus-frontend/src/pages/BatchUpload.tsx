@@ -1,4 +1,6 @@
 import { useState, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUpload } from "@/context/UploadContext";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,36 +61,17 @@ function formatSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
 
-let fileIdCounter = 0;
-
 export default function BatchUpload() {
-  const [files, setFiles] = useState<UploadFile[]>([]);
+  const navigate = useNavigate();
+  const {
+    files,
+    isProcessing,
+    addFiles,
+    removeFile,
+    startProcessing,
+  } = useUpload();
   const [isDragOver, setIsDragOver] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const addFiles = useCallback((fileList: FileList | null) => {
-    if (!fileList) return;
-    const newFiles: UploadFile[] = Array.from(fileList)
-      .filter(
-        (f) =>
-          f.type === "application/pdf" ||
-          f.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      )
-      .map((f) => ({
-        id: `file-${++fileIdCounter}`,
-        name: f.name,
-        size: f.size,
-        status: "pending" as FileStatus,
-        progress: 0,
-        file: f,
-      }));
-    setFiles((prev) => [...prev, ...newFiles]);
-  }, []);
-
-  const removeFile = (id: string) => {
-    setFiles((prev) => prev.filter((f) => f.id !== id));
-  };
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -99,54 +82,12 @@ export default function BatchUpload() {
     [addFiles]
   );
 
-  const startProcessing = async () => {
-    const pendingFiles = files.filter((f) => f.status === "pending");
-    if (pendingFiles.length === 0) return;
-
-    setIsProcessing(true);
-
-    // Process files one by one
-    for (const uploadFile of pendingFiles) {
-      // Mark as extracting
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === uploadFile.id ? { ...f, status: "extracting", progress: 30 } : f
-        )
-      );
-
-      try {
-        const formData = new FormData();
-        formData.append("file", uploadFile.file);
-
-        const response = await fetch(`${API_URL}/candidates/upload`, {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const err = await response.json().catch(() => ({}));
-          throw new Error(err.message || "Upload failed");
-        }
-
-        // Success
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === uploadFile.id ? { ...f, status: "completed", progress: 100 } : f
-          )
-        );
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Unknown error";
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === uploadFile.id
-              ? { ...f, status: "error", progress: 0, errorMessage: message }
-              : f
-          )
-        );
-      }
-    }
-
-    setIsProcessing(false);
+  const handleStartProcessing = () => {
+    startProcessing(() => {
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 800);
+    });
   };
 
   const pendingCount = files.filter((f) => f.status === "pending").length;
@@ -226,7 +167,7 @@ export default function BatchUpload() {
                 : `${files.length} file${files.length > 1 ? "s" : ""} · ${pendingCount} pending · ${completedCount} completed`}
             </p>
             <Button
-              onClick={startProcessing}
+              onClick={handleStartProcessing}
               disabled={pendingCount === 0 || isProcessing}
               className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
             >

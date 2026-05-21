@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles, ExternalLink, User, Link2, Mail, Calendar, Briefcase, CheckCircle2, AlertCircle, Loader2, MessageSquare, Phone } from "lucide-react";
 import {
   Dialog,
@@ -43,6 +43,24 @@ export function CandidateDetailModal({
     previewUrl?: string;
   } | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const [cultureFit, setCultureFit] = useState<any>(null);
+
+  useEffect(() => {
+    if (candidate && candidate.hollandCode) {
+      const targetQuery = localStorage.getItem("electus-culture-target") || "";
+      const url = targetQuery 
+        ? `http://localhost:3000/candidates/${candidate.id}/culture-fit?target=${encodeURIComponent(targetQuery)}`
+        : `http://localhost:3000/candidates/${candidate.id}/culture-fit`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => setCultureFit(data))
+        .catch(err => console.error(err));
+    } else {
+      setCultureFit(null);
+    }
+  }, [candidate]);
 
   if (!candidate) return null;
 
@@ -90,8 +108,8 @@ export function CandidateDetailModal({
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[700px] p-0 gap-0 overflow-hidden glass-strong border-foreground/[0.1] bg-background/95 backdrop-blur-2xl">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-foreground/[0.06]">
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden glass-strong border-foreground/[0.1] bg-background">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-foreground/[0.06] flex-shrink-0">
             <DialogTitle className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground/[0.06] border border-foreground/[0.1]">
                 {blindMode ? (
@@ -104,20 +122,20 @@ export function CandidateDetailModal({
               </div>
               <div>
                 <p className="text-base font-semibold text-foreground">{displayName}</p>
-                <p className="text-sm font-normal text-foreground/40">
+                <p className="text-sm font-normal text-foreground/70 dark:text-foreground/50">
                   {candidate.education} · {candidate.experience}
                 </p>
               </div>
               {candidate.matchScore !== null && (
                 <span className="ml-auto text-2xl font-bold text-primary">
                   {candidate.matchScore}%
-                  <span className="ml-1 text-xs font-normal text-foreground/40">match</span>
+                  <span className="ml-1 text-xs font-normal text-foreground/60 dark:text-foreground/45">match</span>
                 </span>
               )}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="grid grid-cols-5 gap-0">
+          <div className="grid grid-cols-5 gap-0 overflow-y-auto flex-1">
             {/* Left Column */}
             <div className="col-span-3 border-r border-foreground/[0.06] p-6 space-y-5">
               {/* AI Summary */}
@@ -128,7 +146,7 @@ export function CandidateDetailModal({
                 </div>
                 <ul className="space-y-2">
                   {(candidate.aiSummary ?? []).map((point, i) => (
-                    <li key={i} className="flex gap-2 text-sm text-foreground/50 leading-relaxed">
+                    <li key={i} className="flex gap-2 text-sm text-foreground/80 dark:text-foreground/65 leading-relaxed">
                       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
                       {point}
                     </li>
@@ -138,14 +156,14 @@ export function CandidateDetailModal({
 
               {/* Email */}
               {candidate.email && !blindMode && (
-                <div className="flex items-center gap-2 text-sm text-foreground/40">
+                <div className="flex items-center gap-2 text-sm text-foreground/65 dark:text-foreground/50">
                   <Mail className="h-3.5 w-3.5" />
                   <span>{candidate.email}</span>
                 </div>
               )}
 
               {candidate.phone && !blindMode && (
-                <div className="flex items-center gap-2 text-sm text-foreground/40 mt-1">
+                <div className="flex items-center gap-2 text-sm text-foreground/65 dark:text-foreground/50 mt-1">
                   <Phone className="h-3.5 w-3.5" />
                   <span>{candidate.phone}</span>
                 </div>
@@ -172,11 +190,38 @@ export function CandidateDetailModal({
             {/* Right Column */}
             <div className="col-span-2 p-6 space-y-5">
               <div>
-                <h3 className="text-sm font-semibold text-foreground mb-3">
-                  Holland Code (RIASEC)
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Holland Code (RIASEC)
+                  </h3>
+                  {cultureFit && (
+                    <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-md">
+                      <Sparkles className="h-3 w-3" />
+                      <span className="text-xs font-bold">{cultureFit.score}% Culture Fit</span>
+                    </div>
+                  )}
+                </div>
                 {candidate.hollandCode ? (
-                  <HollandChart distribution={candidate.hollandCode.distribution} />
+                  <>
+                    <HollandChart distribution={candidate.hollandCode.distribution} />
+                    {cultureFit && cultureFit.matchDetails && (
+                      <div className="mt-4 bg-foreground/[0.03] border border-foreground/[0.06] rounded-md p-3">
+                        <p className="text-[10px] uppercase font-bold text-foreground/60 dark:text-foreground/45 mb-2">Culture Fit Analysis</p>
+                        <div className="space-y-1.5">
+                          {cultureFit.matchDetails.slice(0, 3).map((detail: any) => (
+                            <div key={detail.code} className="flex items-center justify-between text-[11px]">
+                              <span className="text-foreground/85 dark:text-foreground/75 font-medium">{detail.label}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-foreground font-semibold">{Math.round(detail.candidateValue)}%</span>
+                                <span className="text-foreground/50 dark:text-foreground/40">vs</span>
+                                <span className="text-primary/90 dark:text-primary font-semibold">{detail.targetValue}% Target</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <p className="text-sm text-foreground/30">Not available yet</p>
                 )}
@@ -186,7 +231,7 @@ export function CandidateDetailModal({
                 <h3 className="text-sm font-semibold text-foreground mb-2">Key Skills</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {(candidate.skills ?? []).map((skill) => (
-                    <Badge key={skill} variant="secondary" className="text-[11px] font-medium bg-foreground/[0.06] border border-foreground/[0.08] text-foreground/70 hover:bg-foreground/[0.1]">
+                    <Badge key={skill} variant="secondary" className="text-[11px] font-medium bg-foreground/[0.06] border border-foreground/[0.08] text-foreground/85 dark:text-foreground/75 hover:bg-foreground/[0.1]">
                       {skill}
                     </Badge>
                   ))}
@@ -196,7 +241,7 @@ export function CandidateDetailModal({
           </div>
 
           {/* Bottom Actions */}
-          <div className="flex gap-3 border-t border-foreground/[0.06] p-5">
+          <div className="flex gap-3 border-t border-foreground/[0.06] p-5 flex-shrink-0">
             <Button
               className="flex-1 h-10 bg-primary/90 hover:bg-primary text-primary-foreground gap-2"
               onClick={() => setInviteStep("confirm")}
@@ -206,7 +251,7 @@ export function CandidateDetailModal({
             </Button>
             <Button
               variant="outline"
-              className="h-10 glass-btn border-foreground/[0.1] text-foreground/80 hover:text-foreground"
+              className="h-10 border-primary text-primary hover:bg-primary/10 hover:text-primary transition-colors duration-200"
               onClick={() => { onMarkDone(candidate.id); handleClose(); }}
             >
               Done Reviewing
@@ -217,7 +262,7 @@ export function CandidateDetailModal({
 
       {/* ── Confirmation / Sending / Result Dialog ── */}
       <Dialog open={inviteStep !== "idle"} onOpenChange={() => { if (inviteStep !== "sending") resetInvite(); }}>
-        <DialogContent className="sm:max-w-[460px] glass-strong border-foreground/[0.1] bg-background/95 backdrop-blur-2xl">
+        <DialogContent className="sm:max-w-[460px] glass-strong border-foreground/[0.1] bg-background">
 
           {/* Step: Confirm — fill in details */}
           {inviteStep === "confirm" && (

@@ -27,7 +27,9 @@ export function CandidateRow({
     >
       {/* Avatar */}
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] border border-foreground/[0.1]">
-        {blindMode ? (
+        {candidate.processingStatus === "processing" ? (
+          <span className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+        ) : blindMode ? (
           <User className="h-5 w-5 text-foreground/50" />
         ) : (
           <span className="text-sm font-semibold text-foreground/80">
@@ -91,15 +93,15 @@ export function CandidateRow({
         )}
       </div>
 
-      {/* Actions */}
       <div className="flex shrink-0 gap-2" onClick={(e) => e.stopPropagation()}>
         <Button
           variant="outline"
           size="sm"
-          className="text-xs h-8 glass-btn border-foreground/[0.1] text-foreground/80 hover:text-foreground"
+          disabled={candidate.processingStatus === "processing"}
+          className="text-xs h-8 glass-btn border-foreground/[0.1] text-foreground/80 hover:text-foreground disabled:opacity-50"
           onClick={() => onViewProfile(candidate)}
         >
-          View Profile
+          {candidate.processingStatus === "processing" ? "Processing..." : "View Profile"}
         </Button>
         {candidate.reviewStatus === "pending" && (
           <Button

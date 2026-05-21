@@ -8,6 +8,7 @@ import { StatsCards } from "@/components/dashboard/StatsCards";
 import { SearchFilterBar } from "@/components/dashboard/SearchFilterBar";
 import { CandidateList } from "@/components/dashboard/CandidateList";
 import { CandidateDetailModal } from "@/components/dashboard/CandidateDetailModal";
+import { useUpload } from "@/context/UploadContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,10 +37,28 @@ const Index = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [searching, setSearching] = useState(false);
 
+  const { isProcessing } = useUpload();
+
   // Fetch candidates from backend API
   useEffect(() => {
     fetchCandidates();
   }, []);
+
+  // Poll if any candidate is processing, or refetch when global processing finishes
+  useEffect(() => {
+    if (!isProcessing) {
+      fetchCandidates();
+    }
+
+    const hasProcessing = candidates.some(c => c.processingStatus === 'processing');
+    if (!hasProcessing) return;
+
+    const interval = setInterval(() => {
+      fetchCandidates();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [candidates, isProcessing]);
 
   const fetchCandidates = async () => {
     try {

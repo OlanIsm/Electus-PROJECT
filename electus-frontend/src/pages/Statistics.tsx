@@ -34,12 +34,12 @@ const GlassTooltipStyle = {
 };
 
 const HOLLAND_COLORS: Record<string, string> = {
-  Realistic: "#E74C3C",
-  Investigative: "#3498DB",
-  Artistic: "#9B59B6",
-  Social: "#2ECC71",
-  Enterprising: "#F39C12",
-  Conventional: "#1ABC9C",
+  Builder: "#E74C3C",      // Realistic
+  Thinker: "#3498DB",      // Investigative
+  Creator: "#9B59B6",      // Artistic
+  Helper: "#2ECC71",       // Social
+  Persuader: "#F39C12",    // Enterprising
+  Organizer: "#1ABC9C",    // Conventional
 };
 
 const Statistics = () => {
@@ -76,10 +76,10 @@ const Statistics = () => {
     
     // Funnel
     const funnelData = [
-      { stage: "Total Uploaded", value: total, fill: "rgba(255,255,255,0.25)" },
-      { stage: "Passed AI Screening", value: total, fill: "rgba(255,255,255,0.18)" }, // Assuming all pass parsing
-      { stage: "Reviewed", value: reviewed, fill: "hsl(168, 45%, 50%)" },
-      { stage: "Interview Invited", value: 0, fill: "hsl(168, 52%, 45%)" }, // Placeholder for future feature
+      { stage: "Total Uploaded", value: total, fill: "rgba(43, 140, 126, 0.85)" }, // Teal
+      { stage: "Passed AI Screening", value: total, fill: "rgba(59, 130, 246, 0.85)" }, // Blue
+      { stage: "Reviewed", value: reviewed, fill: "rgba(139, 92, 246, 0.85)" }, // Purple
+      { stage: "Interview Invited", value: 0, fill: "rgba(236, 72, 153, 0.85)" }, // Pink
     ];
 
     // Holland
@@ -216,10 +216,10 @@ const Statistics = () => {
                 margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
                 barCategoryGap="28%"
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.4)" }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="stage" type="category" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.5)" }} axisLine={false} tickLine={false} width={130} />
-                <Tooltip contentStyle={GlassTooltipStyle} cursor={{ fill: "rgba(255,255,255,0.03)" }} formatter={(value: number) => [`${value} candidates`, "Count"]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="stage" type="category" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={130} />
+                <Tooltip contentStyle={GlassTooltipStyle} cursor={{ fill: "hsl(var(--foreground) / 0.03)" }} formatter={(value: number) => [`${value} candidates`, "Count"]} />
                 <Bar dataKey="value" radius={[0, 6, 6, 0]}>
                   {stats!.funnelData.map((entry, index) => (
                     <Cell key={index} fill={entry.fill} />
@@ -274,10 +274,10 @@ const Statistics = () => {
             {stats!.skillsData.length > 0 ? (
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={stats!.skillsData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }} barCategoryGap="20%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.4)" }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="skill" type="category" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.5)" }} axisLine={false} tickLine={false} width={100} />
-                  <Tooltip contentStyle={GlassTooltipStyle} cursor={{ fill: "rgba(255,255,255,0.03)" }} formatter={(value: number) => [`${value} mentions`, "Count"]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                  <YAxis dataKey="skill" type="category" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={100} />
+                  <Tooltip contentStyle={GlassTooltipStyle} cursor={{ fill: "hsl(var(--foreground) / 0.03)" }} formatter={(value: number) => [`${value} mentions`, "Count"]} />
                   <Bar dataKey="count" fill="hsl(168, 52%, 45%)" radius={[0, 6, 6, 0]} opacity={0.8} />
                 </BarChart>
               </ResponsiveContainer>
@@ -302,9 +302,9 @@ const Statistics = () => {
             </div>
             <ResponsiveContainer width="100%" height={180}>
               <LineChart data={processingData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.4)" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "rgba(255,255,255,0.4)" }} axisLine={false} tickLine={false} domain={[1.5, 3.5]} unit="s" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" />
+                <XAxis dataKey="day" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} domain={[1.5, 3.5]} unit="s" />
                 <Tooltip contentStyle={GlassTooltipStyle} formatter={(value: number) => [`${value}s`, "Parse Time"]} />
                 <Line type="monotone" dataKey="time" stroke="hsl(168, 52%, 45%)" strokeWidth={2.5} dot={{ fill: "hsl(168, 52%, 45%)", r: 4, strokeWidth: 0 }} activeDot={{ r: 6, strokeWidth: 0 }} />
               </LineChart>
