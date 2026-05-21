@@ -34,33 +34,21 @@ Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolu
 
 ##  System Architecture (Microservice RAG Pipeline)
 
-```
-┌──────────────┐    ┌────────────────────────────┐
-│  Frontend    │───▶│  electus-app               │
-│  React/Vite  │◀───│  API Gateway + Candidates  │
-│  :8080/:5173 │    │  :3000                     │
-└──────────────┘    └───────┬───────────┬────────┘
-                            │           │
-                            │           ▼
-                            │   ┌─────────────────────┐
-                            │   │ electus-documents   │
-                            │   │ PDF/DOCX extraction │
-                            │   │ :3003               │
-                            │   └─────────────────────┘
-                            │
-                            ▼
-                    ┌─────────────────────┐      ┌─────────────────────────┐
-                    │ electus-ai          │─────▶│ Ollama (Local AI)       │
-                    │ CV analysis + embed │◀─────│ llama3.1 + nomic-embed│
-                    │ :3002               │      │ :11434                 │
-                    └─────────────────────┘      └─────────────────────────┘
-                            │
-                            ▼
-                    ┌──────────────────┐
-                    │   PostgreSQL     │
-                    │   Candidates DB  │
-                    │   + Embeddings   │
-                    └──────────────────┘
+```text
+ ┌──────────────┐        ┌────────────────────────────┐
+ │  Frontend    │───────▶│  electus-app               │
+ │  React/Vite  │◀───────│  API Gateway + Candidates  │
+ │  :8080/:5173 │        │  :3000                     │
+ └──────────────┘        └────┬──────────┬──────────┬─┘
+                              │          │          │
+    ┌─────────────────────────┘          │          └─────────────────────────┐
+    │                                    │                                    │
+    ▼                                    ▼                                    ▼
+ ┌──────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐      ┌─────────────────────────┐
+ │  PostgreSQL      │     │  electus-documents  │     │  electus-ai         │─────▶│  Ollama (Local AI)      │
+ │  Candidates DB   │     │  PDF/DOCX extraction│     │  CV analysis + embed│◀─────│  llama3.1 + nomic-embed │
+ │  + Embeddings    │     │  :3003              │     │  :3002              │      │  :11434                 │
+ └──────────────────┘     └─────────────────────┘     └─────────────────────┘      └─────────────────────────┘
 ```
 
 ### Pipeline Flow
