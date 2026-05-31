@@ -51,10 +51,25 @@ const Statistics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+    const token = localStorage.getItem('electus-token');
+    const headers = {
+      ...(options.headers || {}),
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    };
+    const res = await fetch(url, { ...options, headers });
+    if (res.status === 401) {
+      localStorage.removeItem('electus-token');
+      window.location.href = '/login';
+      throw new Error('Unauthorized');
+    }
+    return res;
+  };
+
   useEffect(() => {
     const fetchCandidates = async () => {
       try {
-        const res = await fetch(`${API_URL}/candidates`);
+        const res = await authenticatedFetch(`${API_URL}/candidates`);
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
         setCandidates(data);

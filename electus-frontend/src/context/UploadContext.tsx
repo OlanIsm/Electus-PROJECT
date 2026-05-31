@@ -82,10 +82,18 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const formData = new FormData();
         formData.append("file", uploadFile.file);
 
+        const token = localStorage.getItem('electus-token');
         const response = await fetch(`${API_URL}/candidates/upload`, {
           method: "POST",
           body: formData,
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         });
+
+        if (response.status === 401) {
+          localStorage.removeItem('electus-token');
+          window.location.href = '/login';
+          throw new Error("Session expired. Please log in again.");
+        }
 
         if (!response.ok) {
           const err = await response.json().catch(() => ({}));

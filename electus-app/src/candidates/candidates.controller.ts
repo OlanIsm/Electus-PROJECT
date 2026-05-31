@@ -11,13 +11,16 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CandidatesService } from './candidates.service';
 import { EmailService } from './email.service';
 import { Candidate } from './candidate.entity';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('candidates')
+@UseGuards(JwtAuthGuard)
 export class CandidatesController {
   constructor(
     private readonly candidatesService: CandidatesService,

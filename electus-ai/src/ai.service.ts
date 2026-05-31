@@ -92,12 +92,12 @@ Return exactly this JSON structure:
   "hollandCode": {
     "primary": "one of: R, I, A, S, E, C",
     "distribution": {
-      "R": 10,
-      "I": 20,
-      "A": 15,
-      "S": 25,
-      "E": 20,
-      "C": 10
+      "R": 0,
+      "I": 0,
+      "A": 0,
+      "S": 0,
+      "E": 0,
+      "C": 0
     }
   }
 }
@@ -105,7 +105,7 @@ Return exactly this JSON structure:
 Rules:
 - skills: 3 to 6 most relevant skills only
 - aiSummary: 5 specific, concise insights
-- distribution values must sum to 100
+- distribution values: assign an integer score (0 to 100) for each of the six Holland personality codes (R, I, A, S, E, C) based on the candidate's skills, experience, and projects in the CV text.
 - hasPortfolio: MUST be set to true if a portfolio or code link is found in the CV text.
 - portfolioUrl: Extract the exact link FROM THE CV TEXT. DO NOT invent links. DO NOT use examples. If no link is in the CV, use an empty string.
 - Return ONLY the JSON, nothing else`;
@@ -134,9 +134,49 @@ Rules:
     const parsed = JSON.parse(data.response);
 
     const dist = parsed.hollandCode.distribution as Record<string, number>;
-    const primaryCode: string = parsed.hollandCode.primary;
+    
+    // Normalize values to sum to exactly 100 in backend to prevent LLM arithmetic crash
+    const rawValues = Object.entries(dist).map(([code, value]) => ({
+      code,
+      val: Math.max(0, Number(value) || 0),
+    }));
+    
+    const sum = rawValues.reduce((acc, curr) => acc + curr.val, 0);
+    const normalizedDist: Record<string, number> = {};
+    
+    if (sum > 0) {
+      let currentSum = 0;
+      rawValues.forEach((item, index) => {
+        if (index === rawValues.length - 1) {
+          normalizedDist[item.code] = 100 - currentSum;
+        } else {
+          const normVal = Math.round((item.val / sum) * 100);
+          normalizedDist[item.code] = normVal;
+          currentSum += normVal;
+        }
+      });
+    } else {
+      // Fallback
+      rawValues.forEach((item) => {
+        normalizedDist[item.code] = 0;
+      });
+    }
 
-    const distribution = Object.entries(dist).map(([code, value]) => ({
+    // Determine primary code based on highest normalized value
+    let primaryCode = parsed.hollandCode.primary || 'R';
+    if (sum > 0) {
+      let maxVal = -1;
+      let maxCode = primaryCode;
+      Object.entries(normalizedDist).forEach(([code, val]) => {
+        if (val > maxVal) {
+          maxVal = val;
+          maxCode = code;
+        }
+      });
+      primaryCode = maxCode;
+    }
+
+    const distribution = Object.entries(normalizedDist).map(([code, value]) => ({
       code,
       label: HOLLAND_LABELS[code] ?? code,
       value: Number(value),

@@ -44,13 +44,17 @@ const Index = () => {
     fetchCandidates();
   }, []);
 
+  const hasProcessing = candidates.some(c => c.processingStatus === 'processing');
+
   // Poll if any candidate is processing, or refetch when global processing finishes
   useEffect(() => {
+    // If user is currently searching, don't overwrite search results with the full list
+    if (searchQuery.trim()) return;
+
     if (!isProcessing) {
       fetchCandidates();
     }
 
-    const hasProcessing = candidates.some(c => c.processingStatus === 'processing');
     if (!hasProcessing) return;
 
     const interval = setInterval(() => {
@@ -58,11 +62,26 @@ const Index = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [candidates, isProcessing]);
+  }, [isProcessing, searchQuery, hasProcessing]);
+
+  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+    const token = localStorage.getItem('electus-token');
+    const headers = {
+      ...(options.headers || {}),
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    };
+    const res = await fetch(url, { ...options, headers });
+    if (res.status === 401) {
+      localStorage.removeItem('electus-token');
+      window.location.href = '/login';
+      throw new Error('Unauthorized');
+    }
+    return res;
+  };
 
   const fetchCandidates = async () => {
     try {
-      const res = await fetch(`${API_URL}/candidates`);
+      const res = await authenticatedFetch(`${API_URL}/candidates`);
       const data = await res.json();
       setCandidates(data);
     } catch (err) {
@@ -84,7 +103,7 @@ const Index = () => {
     const timeout = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await fetch(`${API_URL}/candidates/search?q=${encodeURIComponent(q)}`);
+        const res = await authenticatedFetch(`${API_URL}/candidates/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         setCandidates(data);
       } catch (err) {
@@ -116,7 +135,7 @@ const Index = () => {
     const newStatus = candidate.reviewStatus === "pending" ? "reviewed" : "pending";
 
     try {
-      await fetch(`${API_URL}/candidates/${id}/status`, {
+      await authenticatedFetch(`${API_URL}/candidates/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reviewStatus: newStatus }),
@@ -137,9 +156,9 @@ const Index = () => {
     setIsDeleting(true);
     try {
       if (confirmAction === 'all' || confirmAction === 'duplicates') {
-        await fetch(`${API_URL}/candidates/${confirmAction}`, { method: 'DELETE' });
+        await authenticatedFetch(`${API_URL}/candidates/${confirmAction}`, { method: 'DELETE' });
       } else {
-        await fetch(`${API_URL}/candidates/status/${confirmAction}`, { method: 'DELETE' });
+        await authenticatedFetch(`${API_URL}/candidates/status/${confirmAction}`, { method: 'DELETE' });
       }
       await fetchCandidates();
     } catch (err) {

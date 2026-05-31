@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,12 +7,59 @@ import { ArrowLeft } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const sha256 = async (message: string): Promise<string> => {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+  };
+
+  const getDeviceName = () => {
+    const ua = navigator.userAgent;
+    if (ua.includes("Chrome")) return "Google Chrome";
+    if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
+    if (ua.includes("Firefox")) return "Firefox";
+    if (ua.includes("Edge")) return "Microsoft Edge";
+    return "Browser Client";
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, handle authentication here
-    // For now, just navigate to the dashboard
-    navigate('/dashboard');
+    setError("");
+    setLoading(true);
+    try {
+      const hashedPassword = await sha256(password);
+      const deviceName = getDeviceName();
+
+      const res = await fetch("http://localhost:3000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          DeviceName: deviceName,
+          Email: email,
+          Password: hashedPassword,
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Invalid credentials");
+      }
+      const data = await res.json();
+      localStorage.setItem("electus-token", data.access_token);
+      localStorage.setItem("electus-user-name", data.user.fullName);
+      localStorage.setItem("electus-user-email", data.user.email);
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || "Connection failed. Is the backend server running?");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,6 +86,12 @@ const Login = () => {
             <p className="text-sm text-foreground/40">Enter your credentials to access your account</p>
           </div>
 
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm p-3 rounded-lg text-center mb-5 animate-fade-in">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-foreground/80">Email address</Label>
@@ -45,6 +99,8 @@ const Login = () => {
                 id="email" 
                 type="email" 
                 placeholder="name@company.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="bg-foreground/[0.03] border-foreground/[0.1] text-foreground placeholder:text-foreground/20 focus:border-teal-500/50"
                 required 
               />
@@ -59,13 +115,19 @@ const Login = () => {
                 id="password" 
                 type="password" 
                 placeholder="••••••••" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="bg-foreground/[0.03] border-foreground/[0.1] text-foreground placeholder:text-foreground/20 focus:border-teal-500/50"
                 required 
               />
             </div>
 
-            <Button type="submit" className="w-full bg-teal-500 hover:bg-teal-400 text-white font-medium shadow-[0_0_20px_rgba(20,184,166,0.3)] mt-2">
-              Sign In
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-teal-500 hover:bg-teal-400 text-white font-medium shadow-[0_0_20px_rgba(20,184,166,0.3)] mt-2"
+            >
+              {loading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
 

@@ -62,7 +62,7 @@ const Landing = () => {
           </h1>
 
           <p className="text-foreground/50 px-6 text-center text-sm md:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed">
-            Unleashing the power of Gemma AI to screen candidates, extract skills, and match the best talent — all in seconds.
+            Unleashing the power of AI to screen candidates, extract skills, and match the best talent — all in seconds.
           </p>
 
           {/* Status indicator */}
