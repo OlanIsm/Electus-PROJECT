@@ -17,9 +17,23 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { email } });
   }
 
+  async findById(id: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { id } });
+  }
+
   async create(userData: Partial<User>): Promise<User> {
     const user = this.usersRepository.create(userData);
     return this.usersRepository.save(user);
+  }
+
+  async updateProfile(id: string, updateData: Partial<User>): Promise<User | null> {
+    await this.usersRepository.update(id, updateData);
+    return this.findById(id);
+  }
+
+  async updateCultureFit(id: string, riasecTarget: Record<string, number>): Promise<User | null> {
+    await this.usersRepository.update(id, { riasecTarget });
+    return this.findById(id);
   }
 
   async createSession(user: User, deviceName: string, token: string, expiresAt: Date): Promise<UserSession> {

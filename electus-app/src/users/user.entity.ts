@@ -14,6 +14,12 @@ export class User {
   @Column()
   fullName: string;
 
+  @Column({ nullable: true })
+  avatarUrl?: string;
+
+  @Column({ type: 'simple-json', nullable: true })
+  riasecTarget?: Record<string, number>;
+
   @CreateDateColumn()
   createdAt: Date;
 }
