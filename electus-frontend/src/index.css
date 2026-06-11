@@ -55,7 +55,7 @@
     --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.07), 0 2px 8px rgba(31, 38, 135, 0.04);
     --glass-shadow-hover: 0 12px 40px rgba(31, 38, 135, 0.1), 0 4px 12px rgba(31, 38, 135, 0.06);
 
-    --glass-strong-bg: #ffffff;
+    --glass-strong-bg: rgba(255, 255, 255, 0.4);
     --glass-sidebar-bg: #ffffff;
   }
 
@@ -313,4 +313,57 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Document View Transitions (Circular Reveal Theme Toggle) */
+::view-transition-group(root) {
+  animation: none;
+}
+
+::view-transition-image-pair(root) {
+  isolation: auto;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  display: block;
+}
+
+/* Dark -> Light: The new light theme screen reveals from coordinate */
+html.light::view-transition-new(root) {
+  z-index: 9999;
+  animation: reveal-circle 800ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+html.light::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* Light -> Dark: The old light theme screen shrinks to coordinate, revealing dark theme */
+html.dark::view-transition-old(root) {
+  z-index: 9999;
+  animation: hide-circle 800ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+html.dark::view-transition-new(root) {
+  z-index: 1;
+}
+
+@keyframes reveal-circle {
+  from {
+    clip-path: circle(0px at var(--theme-x) var(--theme-y));
+  }
+  to {
+    clip-path: circle(var(--theme-r) at var(--theme-x) var(--theme-y));
+  }
+}
+
+@keyframes hide-circle {
+  from {
+    clip-path: circle(var(--theme-r) at var(--theme-x) var(--theme-y));
+  }
+  to {
+    clip-path: circle(0px at var(--theme-x) var(--theme-y));
+  }
 }

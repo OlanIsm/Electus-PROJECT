@@ -26,6 +26,7 @@ export function WebGLShader() {
     animationId: null,
   })
 
+  // 1. Initialize WebGL Scene once on mount
   useEffect(() => {
     if (!canvasRef.current) return
 
@@ -65,8 +66,16 @@ export function WebGLShader() {
         if (isDark > 0.5) {
           gl_FragColor = vec4(r * 0.3, g * 0.85, b * 0.9, 1.0);
         } else {
-          // Light mode: inverse/subtle colors
-          gl_FragColor = vec4(r * 0.1, g * 0.6, b * 0.7, 0.4);
+          // Light mode: solid light slate background with vibrant high-contrast teal wave and a bright white core
+          vec3 bg = vec3(0.97, 0.98, 0.99);
+          vec3 waveColor = vec3(0.0, 0.6, 0.7);
+          float glow = clamp((r + g + b) / 3.0, 0.0, 1.0);
+          
+          vec3 finalColor = mix(bg, waveColor, glow);
+          if (glow > 0.65) {
+            finalColor = mix(finalColor, vec3(1.0, 1.0, 1.0), (glow - 0.65) / 0.35);
+          }
+          gl_FragColor = vec4(finalColor, 1.0);
         }
       }
     `
@@ -76,12 +85,8 @@ export function WebGLShader() {
       refs.renderer = new THREE.WebGLRenderer({ canvas, alpha: true })
       refs.renderer.setPixelRatio(window.devicePixelRatio)
       
-      // Clear color based on theme
-      if (isDark) {
-        refs.renderer.setClearColor(new THREE.Color(0x060a14))
-      } else {
-        refs.renderer.setClearColor(new THREE.Color(0xf8fafc)) // Slate-50
-      }
+      // Set initial clear color based on theme
+      refs.renderer.setClearColor(new THREE.Color(isDark ? 0x060a14 : 0xf8fafc))
 
       refs.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, -1)
 
@@ -153,6 +158,17 @@ export function WebGLShader() {
       refs.renderer?.dispose()
     }
   }, [])
+
+  // 2. React to theme changes instantly without rebuilding the WebGL context
+  useEffect(() => {
+    const { current: refs } = sceneRef
+    if (refs.uniforms) {
+      refs.uniforms.isDark.value = isDark ? 1.0 : 0.0
+    }
+    if (refs.renderer) {
+      refs.renderer.setClearColor(new THREE.Color(isDark ? 0x060a14 : 0xf8fafc))
+    }
+  }, [isDark])
 
   return (
     <canvas

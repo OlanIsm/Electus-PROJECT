@@ -32,7 +32,7 @@ Electus is a state-of-the-art Applicant Tracking System (ATS) designed to revolu
 * Mammoth (DOCX text extraction)
 * pdf-parse v2 (PDF text extraction)
 
-## 📊 Backend Class Diagram
+## Backend Class Diagram
 
 Berikut adalah diagram struktur kelas (Class Diagram) representatif dari arsitektur backend Electus yang di-render secara dinamis menggunakan Mermaid:
 

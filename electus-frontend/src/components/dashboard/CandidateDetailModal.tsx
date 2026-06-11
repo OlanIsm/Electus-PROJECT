@@ -53,9 +53,24 @@ export function CandidateDetailModal({
         ? `http://localhost:3000/candidates/${candidate.id}/culture-fit?target=${encodeURIComponent(targetQuery)}`
         : `http://localhost:3000/candidates/${candidate.id}/culture-fit`;
 
-      fetch(url)
-        .then(res => res.json())
-        .then(data => setCultureFit(data))
+      const token = localStorage.getItem("electus-token");
+      const headers: any = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      fetch(url, { headers })
+        .then(res => {
+          if (res.status === 401) {
+            localStorage.removeItem("electus-token");
+            window.location.href = "/login";
+            return null;
+          }
+          return res.json();
+        })
+        .then(data => {
+          if (data) setCultureFit(data);
+        })
         .catch(err => console.error(err));
     } else {
       setCultureFit(null);
@@ -69,14 +84,26 @@ export function CandidateDetailModal({
   const handleSendInvite = async () => {
     setInviteStep("sending");
     try {
+      const token = localStorage.getItem("electus-token");
+      const headers: any = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const res = await fetch(
         `http://localhost:3000/candidates/${candidate.id}/invite`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ jobTitle, interviewDate, hrName, customMessage: inviteMessage }),
         }
       );
+
+      if (res.status === 401) {
+        localStorage.removeItem("electus-token");
+        window.location.href = "/login";
+        return;
+      }
       const data = await res.json();
       if (!res.ok || !data.success) {
         setErrorMsg(data.message ?? "Failed to send email.");
