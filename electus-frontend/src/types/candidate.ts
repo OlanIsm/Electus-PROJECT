@@ -13,6 +13,7 @@ export interface Candidate {
   portfolioUrl?: string;
   matchScore: number | null;
   reviewStatus: "pending" | "reviewed";
+  processingStatus?: "pending" | "processing" | "done" | "error";
   education: string;
   experience: string;
   aiSummary: string[];
