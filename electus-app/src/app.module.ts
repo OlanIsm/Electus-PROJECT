@@ -7,6 +7,9 @@ import { User } from './users/user.entity';
 import { UserSession } from './users/user-session.entity';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { Notification } from './notifications/notification.entity';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -22,7 +25,7 @@ import { AuthModule } from './auth/auth.module';
         username: configService.get<string>('DB_USERNAME', 'postgres'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME', 'electus'),
-        entities: [Candidate, User, UserSession],
+        entities: [Candidate, User, UserSession, Notification],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -30,6 +33,8 @@ import { AuthModule } from './auth/auth.module';
     CandidatesModule,
     UsersModule,
     AuthModule,
+    NotificationsModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}
