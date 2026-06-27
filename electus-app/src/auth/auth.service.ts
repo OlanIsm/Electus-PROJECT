@@ -23,9 +23,23 @@ export class AuthService {
       password: hashedPassword,
     });
 
+    const payload = { sub: user.id, email: user.email, fullName: user.fullName };
+    const token = this.jwtService.sign(payload);
+
+    // Save session in database with 2 weeks expiry (14 days)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 14);
+
+    await this.usersService.createSession(user, deviceName || 'Unknown Device', token, expiresAt);
+
     return {
       message: 'Registration successful',
-      userId: user.id,
+      access_token: token,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+      },
     };
   }
 
