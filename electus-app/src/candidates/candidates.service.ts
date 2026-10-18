@@ -61,51 +61,67 @@ export class CandidatesService implements OnModuleInit {
     }
   }
 
-  async create(data: Partial<Candidate>) {
-    const candidate = this.candidateRepository.create(data);
+  async create(data: Partial<Candidate>, companyId?: string) {
+    const candidate = this.candidateRepository.create({
+      ...data,
+      ...(companyId ? { companyId } : {}),
+    });
     return this.candidateRepository.save(candidate);
   }
 
-  async findAll() {
-    return this.candidateRepository.find({ order: { createdAt: 'DESC' } });
+  async findAll(companyId?: string) {
+    const where: any = companyId ? { companyId } : {};
+    return this.candidateRepository.find({ where, order: { createdAt: 'DESC' } });
   }
 
-  async findOne(id: string) {
-    const candidate = await this.candidateRepository.findOne({ where: { id } });
+  async findOne(id: string, companyId?: string) {
+    const where: any = { id };
+    if (companyId) {
+      where.companyId = companyId;
+    }
+    const candidate = await this.candidateRepository.findOne({ where });
     if (!candidate) throw new NotFoundException(`Candidate ${id} not found`);
     return candidate;
   }
 
-  async updateStatus(id: string, reviewStatus: string) {
-    const candidate = await this.findOne(id);
+  async updateStatus(id: string, reviewStatus: string, companyId?: string) {
+    const candidate = await this.findOne(id, companyId);
     candidate.reviewStatus = reviewStatus;
     return this.candidateRepository.save(candidate);
   }
 
-  async remove(id: string) {
-    const candidate = await this.findOne(id);
+  async remove(id: string, companyId?: string) {
+    const candidate = await this.findOne(id, companyId);
     await this.candidateRepository.remove(candidate);
     return { message: `Candidate ${id} deleted successfully` };
   }
 
-  async removeAll() {
+  async removeAll(companyId?: string) {
+    if (companyId) {
+      const result = await this.candidateRepository.delete({ companyId });
+      return { message: `Deleted all ${result.affected ?? 0} candidates for company` };
+    }
     const count = await this.candidateRepository.count();
     await this.candidateRepository.clear();
     return { message: `Deleted all ${count} candidates` };
   }
 
-  async removeByStatus(status: string) {
-    const result = await this.candidateRepository.delete({
-      reviewStatus: status,
-    });
+  async removeByStatus(status: string, companyId?: string) {
+    const where: any = { reviewStatus: status };
+    if (companyId) {
+      where.companyId = companyId;
+    }
+    const result = await this.candidateRepository.delete(where);
     return {
       message: `Deleted ${result.affected ?? 0} candidates with status "${status}"`,
     };
   }
 
-  async removeDuplicates() {
+  async removeDuplicates(companyId?: string) {
     // Group by fullName, keep only the latest (newest createdAt)
+    const where: any = companyId ? { companyId } : {};
     const all = await this.candidateRepository.find({
+      where,
       order: { createdAt: 'DESC' },
     });
     const seen = new Map<string, boolean>();
@@ -126,7 +142,7 @@ export class CandidatesService implements OnModuleInit {
     return { message: `Removed ${toDelete.length} duplicate candidates` };
   }
 
-  async uploadCv(file: Express.Multer.File): Promise<Candidate> {
+  async uploadCv(file: Express.Multer.File, companyId?: string): Promise<Candidate> {
     const uploadsDir = path.join(process.cwd(), 'uploads', 'cvs');
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
@@ -141,6 +157,7 @@ export class CandidatesService implements OnModuleInit {
     const baseName = path.parse(file.originalname).name;
     const candidate = this.candidateRepository.create({
       fullName: baseName,
+      companyId,
       cvFilePath,
       reviewStatus: 'pending',
       processingStatus: 'processing',
@@ -193,8 +210,8 @@ export class CandidatesService implements OnModuleInit {
    * Hybrid Search: Combines semantic (vector) search with database text-match.
    * Execution is pushed down entirely to PostgreSQL — zero in-memory OOM risk.
    */
-  async semanticSearch(query: string): Promise<Candidate[]> {
-    console.log(`[Search] Query: "${query}"`);
+  async semanticSearch(query: string, companyId?: string): Promise<Candidate[]> {
+    console.log(`[Search] Query: "${query}" (companyId: ${companyId || 'global'})`);
 
     const queryLower = query.toLowerCase();
     const queryEmbedding = await this.aiService.generateEmbedding(query);
@@ -214,6 +231,13 @@ export class CandidatesService implements OnModuleInit {
     if (hasQueryEmbedding) {
       // Execute database-level vector search with SQL cosine_similarity
       // Excludes cvText & embedding from payload to minimize network & RAM usage
+      const queryParams: any[] = [queryEmbedding, `%${queryLower}%`];
+      let companyCondition = '';
+      if (companyId) {
+        queryParams.push(companyId);
+        companyCondition = `AND c."companyId" = $${queryParams.length}`;
+      }
+
       const rawResults = await this.candidateRepository.query(
         `
         SELECT 
@@ -221,6 +245,7 @@ export class CandidatesService implements OnModuleInit {
           c."fullName",
           c.email,
           c.phone,
+          c."companyId",
           c."reviewStatus",
           c."processingStatus",
           c."aiSummary",
@@ -239,7 +264,7 @@ export class CandidatesService implements OnModuleInit {
             ELSE 0.0 
           END AS "textScore"
         FROM candidate c
-        WHERE c.embedding IS NOT NULL
+        WHERE c.embedding IS NOT NULL ${companyCondition}
         ORDER BY GREATEST(
           cosine_similarity(c.embedding, $1::double precision[]),
           CASE 
@@ -250,7 +275,7 @@ export class CandidatesService implements OnModuleInit {
         ) DESC
         LIMIT 50
         `,
-        [queryEmbedding, `%${queryLower}%`],
+        queryParams,
       );
 
       return rawResults
@@ -266,6 +291,7 @@ export class CandidatesService implements OnModuleInit {
             fullName: row.fullName,
             email: row.email,
             phone: row.phone,
+            companyId: row.companyId,
             reviewStatus: row.reviewStatus,
             processingStatus: row.processingStatus,
             aiSummary: parseJson(row.aiSummary, []),
@@ -284,6 +310,13 @@ export class CandidatesService implements OnModuleInit {
     }
 
     // Fallback: If embedding generation is unavailable, perform text search in database
+    const textParams: any[] = [`%${queryLower}%`];
+    let textCompanyCondition = '';
+    if (companyId) {
+      textParams.push(companyId);
+      textCompanyCondition = `AND c."companyId" = $${textParams.length}`;
+    }
+
     const textResults = await this.candidateRepository.query(
       `
       SELECT 
@@ -291,6 +324,7 @@ export class CandidatesService implements OnModuleInit {
         c."fullName",
         c.email,
         c.phone,
+        c."companyId",
         c."reviewStatus",
         c."processingStatus",
         c."aiSummary",
@@ -303,11 +337,11 @@ export class CandidatesService implements OnModuleInit {
         c."cvFilePath",
         c."createdAt"
       FROM candidate c
-      WHERE LOWER(concat_ws(' ', c."fullName", c."cvText", c.skills, c.education, c.experience, c."aiSummary")) LIKE $1
+      WHERE LOWER(concat_ws(' ', c."fullName", c."cvText", c.skills, c.education, c.experience, c."aiSummary")) LIKE $1 ${textCompanyCondition}
       ORDER BY c."createdAt" DESC
       LIMIT 50
       `,
-      [`%${queryLower}%`],
+      textParams,
     );
 
     return textResults.map((row: any) => ({
@@ -315,6 +349,7 @@ export class CandidatesService implements OnModuleInit {
       fullName: row.fullName,
       email: row.email,
       phone: row.phone,
+      companyId: row.companyId,
       reviewStatus: row.reviewStatus,
       processingStatus: row.processingStatus,
       aiSummary: parseJson(row.aiSummary, []),
@@ -331,8 +366,8 @@ export class CandidatesService implements OnModuleInit {
   }
 
   // Unique Feature: Culture-Fit Matcher
-  async getCultureFit(id: string, targetStr?: string) {
-    const candidate = await this.findOne(id);
+  async getCultureFit(id: string, targetStr?: string, companyId?: string) {
+    const candidate = await this.findOne(id, companyId);
     if (!candidate.hollandCode || !candidate.hollandCode.distribution) {
       return { score: 0, target: {}, matchDetails: [] };
     }

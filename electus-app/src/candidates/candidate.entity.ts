@@ -19,6 +19,10 @@ export class Candidate {
   @Column({ nullable: true })
   phone: string;
 
+  // Tenant / Company ID for data isolation
+  @Column({ nullable: true })
+  companyId?: string;
+
   @Column({ default: 'pending' })
   reviewStatus: string;
 

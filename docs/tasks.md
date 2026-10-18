@@ -10,10 +10,10 @@ Dokumen ini memetakan seluruh kelemahan sistem Electus ATS menjadi rencana imple
 | Kategori Risiko      | Total Task | Pending | In Progress | Selesai |
 | :-------------------- | :----------: | :-------: | :-----------: | :-------: |
 | 🔴 **CRITICAL (P0)** | 4          | 0       | 0           | 4       |
-| 🟠 **HIGH (P1)**     | 4          | 4       | 0           | 0       |
+| 🟠 **HIGH (P1)**     | 4          | 3       | 0           | 1       |
 | 🟡 **MEDIUM (P2)**   | 5          | 4       | 0           | 1       |
 | 🟢 **LOW (P3)**      | 3          | 3       | 0           | 0       |
-| **Total**            | **16**     | **11**  | **0**       | **5**   |
+| **Total**            | **16**     | **10**  | **0**       | **6**   |
 
 
 ---
@@ -117,21 +117,31 @@ Penggunaan `synchronize: true` pada TypeORM di `app.module.ts` sangat berbahaya 
 
 > *Risiko kebocoran privasi data pelamar, eksploitasi akses ilegal, dan integritas input.*
 
-### TASK-05: Multi-Tenancy &amp; Data Isolation (Organisasi / Perusahaan)
+### TASK-05: Multi-Tenancy & Data Isolation (Organisasi / Perusahaan)
 
-- **Status:** `[ ] Pending`
+- **Status:** `[x] Selesai`
 - **File Terdampak:**
   - `electus-app/src/users/user.entity.ts`
   - `electus-app/src/candidates/candidate.entity.ts`
   - `electus-app/src/candidates/candidates.service.ts`
+  - `electus-app/src/candidates/candidates.controller.ts`
+  - `electus-app/src/auth/auth.service.ts`
+  - `electus-app/src/auth/jwt.strategy.ts`
+  - `electus-app/src/auth/current-user.decorator.ts`
+  - `electus-app/src/database/migrations/1792340000000-AddCompanyIdToUserAndCandidate.ts`
 - **Penjelasan Masalah:**  
 Semua user yang login mengakses satu tabel kandidat global yang sama. Data pelamar tidak memiliki pemilik (`companyId` atau `tenantId`), sehingga recruiter dari perusahaan lain bisa melihat dan mengelola data pelamar milik recruiter lain.
 - **Rencana Implementasi:**
   1. Tambahkan relasi `companyId` atau `tenantId` pada entitas `User` dan `Candidate`.
-  2. Perbarui query di `CandidatesService` agar selalu menyaring berdasarkan `where: { tenantId }`.
-  3. Tambahkan custom decorator `@CurrentTenant()` untuk mengambil tenant dari JWT context.
+  2. Perbarui query di `CandidatesService` agar selalu menyaring berdasarkan `where: { tenantId }` / `companyId`.
+  3. Tambahkan custom decorator `@CurrentUser()` untuk mengambil tenant dari JWT context.
 - **Apa yang Telah Dilakukan:**
-  - Audit struktur entitas kandidat dan user.
+  - Ditambahkan kolom `companyId` pada entitas `User` dan `Candidate` dengan indeks `IDX_candidate_companyId`.
+  - Dibuat dan dieksekusi database migration `1792340000000-AddCompanyIdToUserAndCandidate.ts` yang menambahkan kolom, indeks B-Tree, dan melakukan backfill data kandidat eksisting ke company id pengguna awal.
+  - Dibuat decorator `@CurrentUser()` untuk mengekstrak tenant context dari JWT.
+  - JWT claim menyertakan `companyId` saat register dan login.
+  - Seluruh query di `CandidatesService` (`findAll`, `findOne`, `create`, `uploadCv`, `semanticSearch`, `updateStatus`, `remove`, `removeAll`, `removeDuplicates`, `removeByStatus`, `getCultureFit`) diisolasi penuh per `companyId`.
+  - Semua unit test dan build lulus 100%.
 
 ---
 

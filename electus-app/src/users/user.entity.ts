@@ -17,6 +17,9 @@ export class User {
   @Column({ nullable: true })
   avatarUrl?: string;
 
+  @Column({ nullable: true })
+  companyId?: string;
+
   @Column({ type: 'simple-json', nullable: true })
   riasecTarget?: Record<string, number>;
 

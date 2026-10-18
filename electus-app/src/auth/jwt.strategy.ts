@@ -25,6 +25,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!isValid) {
       throw new UnauthorizedException('Session expired or logged out');
     }
-    return { userId: payload.sub, email: payload.email, fullName: payload.fullName };
+    return {
+      userId: payload.sub,
+      email: payload.email,
+      fullName: payload.fullName,
+      companyId: payload.companyId || payload.sub,
+    };
   }
 }

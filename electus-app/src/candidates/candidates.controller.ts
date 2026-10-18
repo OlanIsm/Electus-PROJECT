@@ -15,7 +15,6 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -23,6 +22,7 @@ import { CandidatesService } from './candidates.service';
 import { EmailService } from './email.service';
 import { Candidate } from './candidate.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
 
 @Controller('candidates')
 @UseGuards(JwtAuthGuard)
@@ -34,8 +34,8 @@ export class CandidatesController {
 
   // POST /candidates
   @Post()
-  create(@Body() body: Partial<Candidate>) {
-    return this.candidatesService.create(body);
+  create(@Body() body: Partial<Candidate>, @CurrentUser() user: any) {
+    return this.candidatesService.create(body, user?.companyId);
   }
 
   // POST /candidates/upload  — upload PDF/DOCX CV
@@ -59,28 +59,28 @@ export class CandidatesController {
       },
     }),
   )
-  uploadCv(@UploadedFile() file: Express.Multer.File) {
+  uploadCv(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: any) {
     if (!file) throw new BadRequestException('No file uploaded');
-    return this.candidatesService.uploadCv(file);
+    return this.candidatesService.uploadCv(file, user?.companyId);
   }
 
   // GET /candidates/search?q=...  — Semantic Search (RAG)
   @Get('search')
-  search(@Query('q') query: string) {
-    if (!query?.trim()) return this.candidatesService.findAll();
-    return this.candidatesService.semanticSearch(query);
+  search(@Query('q') query: string, @CurrentUser() user: any) {
+    if (!query?.trim()) return this.candidatesService.findAll(user?.companyId);
+    return this.candidatesService.semanticSearch(query, user?.companyId);
   }
 
   // GET /candidates
   @Get()
-  findAll() {
-    return this.candidatesService.findAll();
+  findAll(@CurrentUser() user: any) {
+    return this.candidatesService.findAll(user?.companyId);
   }
 
   // GET /candidates/:id
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.candidatesService.findOne(id);
+  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: any) {
+    return this.candidatesService.findOne(id, user?.companyId);
   }
 
   // PATCH /candidates/:id/status
@@ -88,32 +88,33 @@ export class CandidatesController {
   updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('reviewStatus') reviewStatus: string,
+    @CurrentUser() user: any,
   ) {
-    return this.candidatesService.updateStatus(id, reviewStatus);
+    return this.candidatesService.updateStatus(id, reviewStatus, user?.companyId);
   }
 
   // DELETE /candidates/duplicates
   @Delete('duplicates')
-  removeDuplicates() {
-    return this.candidatesService.removeDuplicates();
+  removeDuplicates(@CurrentUser() user: any) {
+    return this.candidatesService.removeDuplicates(user?.companyId);
   }
 
   // DELETE /candidates/all
   @Delete('all')
-  removeAll() {
-    return this.candidatesService.removeAll();
+  removeAll(@CurrentUser() user: any) {
+    return this.candidatesService.removeAll(user?.companyId);
   }
 
   // DELETE /candidates/status/:status
   @Delete('status/:status')
-  removeByStatus(@Param('status') status: string) {
-    return this.candidatesService.removeByStatus(status);
+  removeByStatus(@Param('status') status: string, @CurrentUser() user: any) {
+    return this.candidatesService.removeByStatus(status, user?.companyId);
   }
 
   // DELETE /candidates/:id
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.candidatesService.remove(id);
+  remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: any) {
+    return this.candidatesService.remove(id, user?.companyId);
   }
 
   // POST /candidates/:id/invite — send interview invite email
@@ -121,8 +122,9 @@ export class CandidatesController {
   async sendInvite(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: { jobTitle: string; interviewDate: string; hrName: string; customMessage?: string },
+    @CurrentUser() user: any,
   ) {
-    const candidate = await this.candidatesService.findOne(id);
+    const candidate = await this.candidatesService.findOne(id, user?.companyId);
     if (!candidate.email) {
       return { success: false, message: 'Candidate has no email address on record.' };
     }
@@ -144,12 +146,12 @@ export class CandidatesController {
   }
 
   @Get(':id/status')
-  async getProcessingStatus(@Param('id', ParseUUIDPipe) id: string) {
-    const candidate = await this.candidatesService.findOne(id);
+  async getProcessingStatus(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: any) {
+    const candidate = await this.candidatesService.findOne(id, user?.companyId);
     return {
       id: candidate.id,
       processingStatus: candidate.processingStatus,
-      fullName: candidate.fullName
+      fullName: candidate.fullName,
     };
   }
 
@@ -157,18 +159,20 @@ export class CandidatesController {
   @Get(':id/culture-fit')
   async getCultureFit(
     @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: any,
     @Query('target') target?: string,
   ) {
-    return this.candidatesService.getCultureFit(id, target);
+    return this.candidatesService.getCultureFit(id, target, user?.companyId);
   }
 
   // GET /candidates/:id/cv — Stream / Download original CV file
   @Get(':id/cv')
   async downloadCv(
     @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: any,
     @Res() res: any,
   ) {
-    const candidate = await this.candidatesService.findOne(id);
+    const candidate = await this.candidatesService.findOne(id, user?.companyId);
     if (!candidate.cvFilePath) {
       throw new NotFoundException('No CV file found for this candidate');
     }

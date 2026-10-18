@@ -26,6 +26,10 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
+  async update(id: string, updateData: Partial<User>) {
+    return this.usersRepository.update(id, updateData);
+  }
+
   async updateProfile(id: string, updateData: Partial<User>): Promise<User | null> {
     await this.usersRepository.update(id, updateData);
     return this.findById(id);

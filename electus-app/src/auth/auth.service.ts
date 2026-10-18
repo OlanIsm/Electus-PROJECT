@@ -23,7 +23,13 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const payload = { sub: user.id, email: user.email, fullName: user.fullName };
+    // Default companyId to user.id if not already set (personal tenant workspace)
+    if (!user.companyId) {
+      user.companyId = user.id;
+      await this.usersService.update(user.id, { companyId: user.id });
+    }
+
+    const payload = { sub: user.id, email: user.email, fullName: user.fullName, companyId: user.companyId };
     const token = this.jwtService.sign(payload);
 
     // Save session in database with 2 weeks expiry (14 days)
@@ -39,6 +45,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
+        companyId: user.companyId,
       },
     };
   }
@@ -54,7 +61,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email, fullName: user.fullName };
+    const companyId = user.companyId || user.id;
+    const payload = { sub: user.id, email: user.email, fullName: user.fullName, companyId };
     const token = this.jwtService.sign(payload);
 
     // Save session in database with 2 weeks expiry (14 days)
@@ -69,6 +77,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
+        companyId,
       },
     };
   }
