@@ -29,7 +29,8 @@ export class AuthService {
       await this.usersService.update(user.id, { companyId: user.id });
     }
 
-    const payload = { sub: user.id, email: user.email, fullName: user.fullName, companyId: user.companyId };
+    const role = user.role || 'admin';
+    const payload = { sub: user.id, email: user.email, fullName: user.fullName, companyId: user.companyId, role };
     const token = this.jwtService.sign(payload);
 
     // Save session in database with 2 weeks expiry (14 days)
@@ -46,6 +47,7 @@ export class AuthService {
         email: user.email,
         fullName: user.fullName,
         companyId: user.companyId,
+        role,
       },
     };
   }
@@ -62,7 +64,8 @@ export class AuthService {
     }
 
     const companyId = user.companyId || user.id;
-    const payload = { sub: user.id, email: user.email, fullName: user.fullName, companyId };
+    const role = user.role || 'admin';
+    const payload = { sub: user.id, email: user.email, fullName: user.fullName, companyId, role };
     const token = this.jwtService.sign(payload);
 
     // Save session in database with 2 weeks expiry (14 days)
@@ -78,6 +81,7 @@ export class AuthService {
         email: user.email,
         fullName: user.fullName,
         companyId,
+        role,
       },
     };
   }

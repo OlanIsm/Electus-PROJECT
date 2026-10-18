@@ -10,10 +10,10 @@ Dokumen ini memetakan seluruh kelemahan sistem Electus ATS menjadi rencana imple
 | Kategori Risiko      | Total Task | Pending | In Progress | Selesai |
 | :-------------------- | :----------: | :-------: | :-----------: | :-------: |
 | 🔴 **CRITICAL (P0)** | 4          | 0       | 0           | 4       |
-| 🟠 **HIGH (P1)**     | 4          | 3       | 0           | 1       |
+| 🟠 **HIGH (P1)**     | 4          | 2       | 0           | 2       |
 | 🟡 **MEDIUM (P2)**   | 5          | 4       | 0           | 1       |
 | 🟢 **LOW (P3)**      | 3          | 3       | 0           | 0       |
-| **Total**            | **16**     | **10**  | **0**       | **6**   |
+| **Total**            | **16**     | **9**   | **0**       | **7**   |
 
 
 ---
@@ -145,13 +145,18 @@ Semua user yang login mengakses satu tabel kandidat global yang sama. Data pelam
 
 ---
 
-### TASK-06: Role-Based Access Control (RBAC) &amp; Proteksi Endpoint Destruktif
+### TASK-06: Role-Based Access Control (RBAC) & Proteksi Endpoint Destruktif
 
-- **Status:** `[ ] Pending`
+- **Status:** `[x] Selesai`
 - **File Terdampak:**
-  - `electus-app/src/auth/roles.guard.ts` *(baru)*
-  - `electus-app/src/candidates/candidates.controller.ts`
   - `electus-app/src/users/user.entity.ts`
+  - `electus-app/src/auth/roles.guard.ts`
+  - `electus-app/src/auth/roles.decorator.ts`
+  - `electus-app/src/auth/roles.guard.spec.ts`
+  - `electus-app/src/auth/auth.service.ts`
+  - `electus-app/src/auth/jwt.strategy.ts`
+  - `electus-app/src/candidates/candidates.controller.ts`
+  - `electus-app/src/database/migrations/1792350000000-AddRoleToUser.ts`
 - **Penjelasan Masalah:**  
 Endpoint `DELETE /candidates/all`, `DELETE /candidates/duplicates`, dan `DELETE /candidates/status/:status` saat ini bisa dipanggil oleh siapa saja yang memiliki token JWT biasa. Satu klik atau request tidak sengaja dapat memusnahkan seluruh database pelamar.
 - **Rencana Implementasi:**
@@ -159,7 +164,12 @@ Endpoint `DELETE /candidates/all`, `DELETE /candidates/duplicates`, dan `DELETE 
   2. Buat `RolesGuard` dan decorator `@Roles('admin')`.
   3. Pasang proteksi hanya role `admin` yang dapat memanggil endpoint bulk delete.
 - **Apa yang Telah Dilakukan:**
-  - Audit endpoint controller di `candidates.controller.ts`.
+  - Menambahkan kolom `role` (enum: `admin`, `recruiter`, `interviewer`, default: `admin`) pada entitas `User`.
+  - Membuat dan menjalankan migrasi database `1792350000000-AddRoleToUser.ts`.
+  - Membuat custom metadata decorator `@Roles(...)` dan pengaman otorisasi `RolesGuard`.
+  - Menyertakan role pengguna dalam token JWT saat register, login, dan validasi sesi.
+  - Memproteksi seluruh endpoint destruktif massal (`DELETE /candidates/all`, `DELETE /candidates/duplicates`, `DELETE /candidates/status/:status`) dengan `@Roles(UserRole.ADMIN)`.
+  - Membuat unit test `roles.guard.spec.ts` dan memverifikasi kelulusan 100% tes controller dan guard.
 
 ---
 

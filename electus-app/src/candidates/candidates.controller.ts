@@ -23,9 +23,12 @@ import { EmailService } from './email.service';
 import { Candidate } from './candidate.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { UserRole } from '../users/user.entity';
 
 @Controller('candidates')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CandidatesController {
   constructor(
     private readonly candidatesService: CandidatesService,
@@ -95,18 +98,21 @@ export class CandidatesController {
 
   // DELETE /candidates/duplicates
   @Delete('duplicates')
+  @Roles(UserRole.ADMIN)
   removeDuplicates(@CurrentUser() user: any) {
     return this.candidatesService.removeDuplicates(user?.companyId);
   }
 
   // DELETE /candidates/all
   @Delete('all')
+  @Roles(UserRole.ADMIN)
   removeAll(@CurrentUser() user: any) {
     return this.candidatesService.removeAll(user?.companyId);
   }
 
   // DELETE /candidates/status/:status
   @Delete('status/:status')
+  @Roles(UserRole.ADMIN)
   removeByStatus(@Param('status') status: string, @CurrentUser() user: any) {
     return this.candidatesService.removeByStatus(status, user?.companyId);
   }

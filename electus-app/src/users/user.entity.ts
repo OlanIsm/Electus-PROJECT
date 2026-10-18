@@ -1,5 +1,11 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
 
+export enum UserRole {
+  ADMIN = 'admin',
+  RECRUITER = 'recruiter',
+  INTERVIEWER = 'interviewer',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -19,6 +25,9 @@ export class User {
 
   @Column({ nullable: true })
   companyId?: string;
+
+  @Column({ default: UserRole.ADMIN })
+  role: string;
 
   @Column({ type: 'simple-json', nullable: true })
   riasecTarget?: Record<string, number>;
