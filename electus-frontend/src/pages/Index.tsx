@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { ArrowUpRight, Coins, FileUp, ShieldCheck, Trash2, UserRound } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Label } from "@/components/ui/label";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatsCards } from "@/components/dashboard/StatsCards";
+import { DashboardCalendar } from "@/components/dashboard/DashboardCalendar";
 import { SearchFilterBar } from "@/components/dashboard/SearchFilterBar";
 import { CandidateList } from "@/components/dashboard/CandidateList";
 import { CandidateDetailModal } from "@/components/dashboard/CandidateDetailModal";
@@ -184,15 +186,16 @@ const Index = () => {
 
   return (
     <DashboardLayout>
+      <div className="dashboard-page">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6 animate-fade-in">
+      <div className="dashboard-header flex items-start justify-between mb-6 animate-fade-in">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Welcome back, {userName}</h1>
+          <h1 className="text-2xl font-semibold text-foreground">Welcome back, <span>{userName}</span></h1>
           <p className="mt-1 text-sm text-foreground/40">
             Manage your candidates and track hiring progress.
           </p>
         </div>
-        <div className="flex items-center gap-3 rounded-xl glass px-4 py-3">
+        <div className="blind-screening flex items-center gap-3 rounded-xl glass px-4 py-3">
           <div className="text-right">
             <Label htmlFor="blind-mode" className="text-sm font-medium text-foreground/80 cursor-pointer">
               Blind Screening
@@ -205,10 +208,50 @@ const Index = () => {
             onCheckedChange={setBlindMode}
           />
         </div>
+        <Link to="/account" className="dashboard-profile light-only" aria-label="Your account" title={userName}>
+          {userName.trim().split(/\s+/).slice(0, 2).map(n => n[0]).join("") || <UserRound />}
+        </Link>
       </div>
 
+      <section className="dashboard-activities light-only" aria-labelledby="activities-title">
+        <h2 id="activities-title">Your workspace <span>({candidates.length})</span></h2>
+        <div className="activity-grid">
+          <DashboardCalendar />
+          <Link to="/upload" className="activity-card activity-upload">
+            <FileUp className="activity-icon" strokeWidth={1.5} aria-hidden="true" />
+            <span className="activity-caption">PDF &amp; DOCX</span>
+            <div><h3>Upload candidates</h3><span className="round-arrow"><ArrowUpRight strokeWidth={1.5} /></span></div>
+          </Link>
+        </div>
+      </section>
+
+      <aside className="hiring-overview light-only" aria-labelledby="overview-title">
+        <h2 id="overview-title">Hiring overview</h2>
+        <div className="review-summary">
+          <div className="summary-heading"><h3>Review progress</h3><ShieldCheck size={22} strokeWidth={1.5} /></div>
+          <div className="review-percentage">{candidates.length ? Math.round(reviewed / candidates.length * 100) : 0}<span>%</span></div>
+          <p>{reviewed} of {candidates.length} candidates reviewed</p>
+          <progress value={reviewed} max={candidates.length || 1} aria-label="Candidates reviewed" />
+          <dl>
+            <div><dt><span className="status-dot dot-pending" />Pending review</dt><dd>{pending}</dd></div>
+            <div><dt><span className="status-dot dot-reviewed" />Reviewed</dt><dd>{reviewed}</dd></div>
+            <div><dt><span className="status-dot dot-total" />Total candidates</dt><dd>{candidates.length}</dd></div>
+          </dl>
+          {searchActive && <p className="summary-note">Showing progress for search results.</p>}
+        </div>
+        <section className="ai-token-panel" aria-labelledby="ai-tokens-title">
+          <div className="summary-heading"><h3 id="ai-tokens-title">AI tokens</h3><Coins size={22} strokeWidth={1.5} aria-hidden="true" /></div>
+          <p className="token-balance">Balance unavailable</p>
+          <p className="token-description">Token usage is not connected yet.</p>
+          <button type="button" className="upgrade-plan-button">Upgrade your plan<ArrowUpRight size={18} strokeWidth={1.5} aria-hidden="true" /></button>
+        </section>
+        <div className="screening-note"><span className="note-icon"><ShieldCheck strokeWidth={1.5} /></span><div><h3>{blindMode ? "Skills first. Bias less." : "Candidate names visible"}</h3><p>{blindMode ? "Blind screening is on. Candidate names stay hidden." : "Turn on blind screening to hide candidate names."}</p></div></div>
+        <Link to="/account" className="overview-link"><span className="note-icon"><UserRound strokeWidth={1.5} /></span><span>Manage your account<br />&amp; hiring preferences</span><ArrowUpRight size={22} strokeWidth={1.5} /></Link>
+      </aside>
+
       {/* Search & Filters */}
-      <div className="mb-6">
+      <div className="dashboard-search-section mb-6">
+        <h2 className="light-only">Your candidates <span>({filtered.length})</span></h2>
         <SearchFilterBar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -219,10 +262,11 @@ const Index = () => {
           statusFilter={statusFilter}
           onStatusChange={setStatusFilter}
         />
+        {searching && <p className="mt-2 text-sm text-muted-foreground" role="status">Searching candidates...</p>}
       </div>
 
       {/* Bulk Actions */}
-      <div className="mb-6 flex flex-wrap gap-2 animate-fade-in">
+      <div className="dashboard-bulk mb-6 flex flex-wrap gap-2 animate-fade-in">
         <Button variant="outline" size="sm" onClick={() => setConfirmAction('duplicates')} className="h-8 text-xs border-foreground/[0.1] bg-foreground/[0.04] text-foreground/70 hover:bg-foreground/[0.08] hover:text-foreground">
           <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Remove Duplicates
         </Button>
@@ -238,7 +282,8 @@ const Index = () => {
       </div>
 
       {/* Stats */}
-      <div className="mb-6">
+      <div className="dashboard-stats-section mb-6">
+        <h2 className="light-only">Hiring progress</h2>
         <StatsCards
           totalCvs={candidates.length}
           pending={pending}
@@ -248,7 +293,7 @@ const Index = () => {
       </div>
 
       {/* Candidate List */}
-      <div>
+      <div className="dashboard-candidates">
         <CandidateList
           candidates={filtered}
           blindMode={blindMode}
@@ -256,6 +301,7 @@ const Index = () => {
           onViewProfile={setSelectedCandidate}
           onToggleStatus={toggleStatus}
         />
+      </div>
       </div>
 
       {/* Detail Modal */}

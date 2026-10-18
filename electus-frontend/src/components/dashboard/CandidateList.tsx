@@ -21,7 +21,7 @@ export function CandidateList({
   const reviewed = candidates.filter((c) => c.reviewStatus === "reviewed");
 
   return (
-    <Tabs defaultValue="pending" className="animate-fade-in">
+    <Tabs defaultValue="pending" className="candidate-tabs animate-fade-in">
       <TabsList className="bg-foreground/[0.04] border border-foreground/[0.08] h-9">
         <TabsTrigger value="pending" className="text-xs text-foreground/50 data-[state=active]:bg-foreground/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-sm">
           Pending Review ({pending.length})

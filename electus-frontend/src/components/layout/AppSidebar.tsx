@@ -46,9 +46,9 @@ export function AppSidebar() {
 
   return (
     <>
-      <aside className="fixed left-0 top-0 z-30 flex h-screen w-60 flex-col glass-sidebar">
+      <aside className="dashboard-sidebar fixed left-0 top-0 z-30 flex h-screen w-60 flex-col glass-sidebar">
         {/* Logo */}
-        <div className="flex flex-col gap-1 px-5 py-6 border-b border-foreground/[0.06]">
+        <div className="sidebar-brand flex flex-col gap-1 px-5 py-6 border-b border-foreground/[0.06]">
           <div className="flex items-center gap-2">
             <img src="/Logo.png" alt="Electus Logo" className="h-10 w-auto object-contain rounded-md" />
           </div>
@@ -58,12 +58,13 @@ export function AppSidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav aria-label="Main navigation" className="sidebar-navigation flex-1 px-3 py-4 space-y-1">
           {navItems.map((item) => (
             <NavLink
               key={item.title}
               to={item.url}
               end
+              title={item.title}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/50 transition-all hover:bg-foreground/[0.06] hover:text-foreground/80"
               activeClassName="bg-foreground/[0.08] text-foreground font-semibold shadow-[inset_0_1px_0_var(--glass-border)] glow-teal"
             >
@@ -74,9 +75,10 @@ export function AppSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-foreground/[0.06] px-3 py-4 flex flex-col gap-2">
+        <div className="sidebar-footer border-t border-foreground/[0.06] px-3 py-4 flex flex-col gap-2">
           <button
             onClick={() => setShowLogoutDialog(true)}
+            title="Log out"
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400/70 transition-all hover:bg-red-500/10 hover:text-red-400"
           >
             <LogOut className="h-4 w-4" />
@@ -89,7 +91,7 @@ export function AppSidebar() {
       </aside>
 
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent className="glass-strong border border-foreground/[0.08] bg-background/80 backdrop-blur-xl dark">
+        <AlertDialogContent className="glass-strong border border-foreground/[0.08] bg-background backdrop-blur-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-foreground">Confirm Log Out</AlertDialogTitle>
             <AlertDialogDescription className="text-foreground/60">

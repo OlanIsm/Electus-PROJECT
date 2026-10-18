@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Struktur Arsitektur Electus",
+    "output": "electus-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/OlanIsm/Electus-PROJECT.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "05fcd841de49f15e8d14cbd7c0364fe8921baf7e"
+    },
+    "viewBox": [1200, 700]
+  },
+  "components": [
+    {
+      "id": "pengguna_web",
+      "type": "external",
+      "label": "Pengguna Web",
+      "sublabel": "Browser",
+      "pos": [35, 310],
+      "size": [130, 68]
+    },
+    {
+      "id": "frontend_electus",
+      "type": "frontend",
+      "label": "Electus Frontend",
+      "sublabel": "React 18 + Vite :8080",
+      "tag": "SPA",
+      "sources": [
+        { "path": "electus-frontend/src/App.tsx", "label": "Routing aplikasi" },
+        { "path": "electus-frontend/vite.config.ts", "label": "Server Vite" }
+      ],
+      "pos": [225, 310],
+      "size": [165, 68]
+    },
+    {
+      "id": "api_electus",
+      "type": "backend",
+      "label": "Electus API",
+      "sublabel": "NestJS + Express :3000",
+      "tag": "JWT + REST",
+      "sources": [
+        { "path": "electus-app/src/main.ts", "label": "Bootstrap API" },
+        { "path": "electus-app/src/app.module.ts", "label": "Modul aplikasi" },
+        { "path": "electus-app/src/candidates/candidates.service.ts", "label": "Logika kandidat" }
+      ],
+      "pos": [470, 310],
+      "size": [175, 68]
+    },
+    {
+      "id": "postgres_electus",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "TypeORM :5432",
+      "tag": "Users, sessions, candidates",
+      "sources": [
+        { "path": "electus-app/src/app.module.ts", "label": "Konfigurasi TypeORM" },
+        { "path": "electus-app/src/candidates/candidate.entity.ts", "label": "Entitas kandidat" }
+      ],
+      "pos": [745, 310],
+      "size": [180, 68]
+    },
+    {
+      "id": "layanan_dokumen",
+      "type": "backend",
+      "label": "Layanan Dokumen",
+      "sublabel": "NestJS :3003",
+      "tag": "PDF + DOCX",
+      "sources": [
+        { "path": "electus-documents/src/documents.controller.ts", "label": "Endpoint ekstraksi" },
+        { "path": "electus-documents/src/documents.service.ts", "label": "Parser dokumen" }
+      ],
+      "pos": [225, 95],
+      "size": [175, 68]
+    },
+    {
+      "id": "layanan_ai",
+      "type": "backend",
+      "label": "Layanan AI",
+      "sublabel": "NestJS :3002",
+      "tag": "Analisis + embedding",
+      "sources": [
+        { "path": "electus-ai/src/ai.controller.ts", "label": "Endpoint AI" },
+        { "path": "electus-ai/src/ai.service.ts", "label": "Integrasi model" }
+      ],
+      "pos": [470, 95],
+      "size": [180, 68]
+    },
+    {
+      "id": "ollama_runtime",
+      "type": "external",
+      "label": "Ollama",
+      "sublabel": "HTTP API :11434",
+      "tag": "llama3.1 + nomic-embed-text",
+      "sources": [
+        { "path": "electus-ai/src/ai.service.ts", "label": "Pemanggilan Ollama" }
+      ],
+      "pos": [1010, 95],
+      "size": [165, 68]
+    },
+    {
+      "id": "smtp_email",
+      "type": "external",
+      "label": "Server SMTP",
+      "sublabel": "Nodemailer",
+      "tag": "Undangan wawancara",
+      "sources": [
+        { "path": "electus-app/src/candidates/email.service.ts", "label": "Pengiriman email" }
+      ],
+      "pos": [470, 515],
+      "size": [165, 68]
+    },
+    {
+      "id": "avatar_lokal",
+      "type": "database",
+      "label": "Penyimpanan Avatar",
+      "sublabel": "./uploads/avatars",
+      "tag": "Filesystem lokal",
+      "sources": [
+        { "path": "electus-app/src/main.ts", "label": "Static uploads" },
+        { "path": "electus-app/src/users/users.controller.ts", "label": "Upload avatar" }
+      ],
+      "pos": [745, 515],
+      "size": [180, 68]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Proses lokal Electus",
+      "wraps": ["frontend_electus", "api_electus", "postgres_electus", "layanan_dokumen", "layanan_ai", "ollama_runtime", "avatar_lokal"],
+      "pad": 24
+    }
+  ],
+  "connections": [
+    {
+      "id": "browser_ke_frontend",
+      "from": "pengguna_web",
+      "to": "frontend_electus",
+      "label": "Memuat SPA",
+      "variant": "emphasis"
+    },
+    {
+      "id": "frontend_ke_api",
+      "from": "frontend_electus",
+      "to": "api_electus",
+      "label": "HTTP REST, JSON / multipart + JWT",
+      "labelAt": [430, 392],
+      "variant": "emphasis"
+    },
+    {
+      "id": "api_ke_postgres",
+      "from": "api_electus",
+      "to": "postgres_electus",
+      "label": "SQL via TypeORM",
+      "variant": "emphasis"
+    },
+    {
+      "id": "api_ke_dokumen",
+      "from": "api_electus",
+      "to": "layanan_dokumen",
+      "label": "POST JSON base64",
+      "labelDx": -70,
+      "variant": "default"
+    },
+    {
+      "id": "api_ke_ai",
+      "from": "api_electus",
+      "to": "layanan_ai",
+      "label": "POST /ai/analyze dan /ai/embed",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "variant": "default"
+    },
+    {
+      "id": "ai_ke_ollama",
+      "from": "layanan_ai",
+      "to": "ollama_runtime",
+      "label": "HTTP generate + embedding",
+      "variant": "default"
+    },
+    {
+      "id": "api_ke_smtp",
+      "from": "api_electus",
+      "to": "smtp_email",
+      "label": "SMTP via Nodemailer",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "api_ke_avatar",
+      "from": "api_electus",
+      "to": "avatar_lokal",
+      "label": "Baca / tulis filesystem",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Jalur Utama",
+      "items": [
+        "React SPA mengakses satu NestJS API melalui HTTP REST",
+        "API menyimpan pengguna, sesi JWT, kandidat, dan notifikasi di PostgreSQL"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Pemrosesan CV",
+      "items": [
+        "Ekstraksi PDF/DOCX dan analisis AI berjalan sinkron saat upload",
+        "Embedding disimpan sebagai JSON dan pencarian dihitung di memori aplikasi"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Batas Saat Ini",
+      "items": [
+        "Tidak ditemukan queue, vector database, atau konfigurasi deployment cloud",
+        "Avatar memakai filesystem lokal; undangan wawancara dikirim melalui SMTP"
+      ]
+    }
+  ]
+}

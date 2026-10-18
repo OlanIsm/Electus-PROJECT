@@ -1,4 +1,4 @@
-import { Link2, User } from "lucide-react";
+import { ArrowUpRight, Link2, LoaderCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Candidate } from "@/types/candidate";
@@ -19,31 +19,30 @@ export function CandidateRow({
   onToggleStatus,
 }: CandidateRowProps) {
   const displayName = blindMode ? "Anonymous Candidate" : candidate.fullName;
+  const profileDescription = [candidate.experience, candidate.education].filter(Boolean).join(" · ");
+  // Free-form AI summaries can contain names or contact details; keep blind previews structured.
+  const description = candidate.processingStatus === "processing"
+    ? "CV analysis is in progress."
+    : candidate.processingStatus === "error"
+      ? "CV analysis could not be completed."
+      : (!blindMode && candidate.aiSummary?.find(point => point.trim()))
+        || profileDescription
+        || "No summary available yet.";
 
   return (
     <div
-      className="group flex items-center gap-4 rounded-xl glass px-5 py-4 cursor-pointer animate-fade-in"
+      className="candidate-row group flex items-center gap-4 rounded-xl glass px-5 py-4 cursor-pointer animate-fade-in"
       onClick={() => onViewProfile(candidate)}
     >
-      {/* Avatar */}
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] border border-foreground/[0.1]">
-        {candidate.processingStatus === "processing" ? (
-          <span className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
-        ) : blindMode ? (
-          <User className="h-5 w-5 text-foreground/50" />
-        ) : (
-          <span className="text-sm font-semibold text-foreground/80">
-            {candidate.fullName.split(" ").map((n) => n[0]).join("")}
-          </span>
-        )}
-      </div>
-
-      {/* Name + Skills */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-foreground truncate">
+      {/* Name, preview, and skills */}
+      <div className="candidate-identity flex-1 min-w-0">
+        <div className="candidate-name flex items-center gap-2">
+          <p className="text-lg font-semibold text-foreground truncate">
             {displayName}
           </p>
+          {candidate.processingStatus === "processing" && (
+            <LoaderCircle aria-hidden="true" className="h-4 w-4 shrink-0 animate-spin text-primary" />
+          )}
           {candidate.hasPortfolio && (
             <Link2 className="h-3.5 w-3.5 text-foreground/40 shrink-0" />
           )}
@@ -59,7 +58,10 @@ export function CandidateRow({
             </span>
           )}
         </div>
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
+        <p className="candidate-description mt-2 text-sm leading-relaxed text-foreground/70 line-clamp-2">
+          {description}
+        </p>
+        <div className="candidate-skills mt-3 flex flex-wrap gap-1.5">
           {(candidate.skills ?? []).map((skill) => (
             <span
               key={skill}
@@ -83,7 +85,7 @@ export function CandidateRow({
       )}
 
       {/* Match Score */}
-      <div className="w-20 text-right shrink-0">
+      <div className="candidate-match w-20 text-right shrink-0" data-active={showMatchScore}>
         {showMatchScore && candidate.matchScore !== null ? (
           <span className="text-lg font-bold text-primary">
             {candidate.matchScore}%
@@ -93,7 +95,7 @@ export function CandidateRow({
         )}
       </div>
 
-      <div className="flex shrink-0 gap-2" onClick={(e) => e.stopPropagation()}>
+      <div className="candidate-actions flex shrink-0 gap-2" onClick={(e) => e.stopPropagation()}>
         <Button
           variant="outline"
           size="sm"
@@ -102,6 +104,7 @@ export function CandidateRow({
           onClick={() => onViewProfile(candidate)}
         >
           {candidate.processingStatus === "processing" ? "Processing..." : "View Profile"}
+          <ArrowUpRight aria-hidden="true" className="profile-arrow hidden h-4 w-4" />
         </Button>
         {candidate.reviewStatus === "pending" && (
           <Button

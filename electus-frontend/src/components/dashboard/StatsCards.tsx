@@ -12,7 +12,7 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon: Icon, gradientClass, borderClass, glowColor, textClass }: StatCardProps) {
   return (
-    <div className={`relative overflow-hidden rounded-xl p-5 border ${borderClass} bg-gradient-to-br ${gradientClass} shadow-sm dark:shadow-md animate-fade-in group transition-all duration-300`}>
+    <div className={`dashboard-stat relative overflow-hidden rounded-xl p-5 border ${borderClass} bg-gradient-to-br ${gradientClass} shadow-sm dark:shadow-md animate-fade-in group transition-all duration-300`}>
       {/* Background Neon Glow */}
       <div className={`absolute -right-6 -top-6 w-20 h-20 rounded-full blur-2xl opacity-30 dark:opacity-20 group-hover:opacity-50 dark:group-hover:opacity-40 transition-opacity duration-300 ${glowColor}`} />
       
@@ -38,7 +38,7 @@ interface StatsCardsProps {
 
 export function StatsCards({ totalCvs, pending, reviewed, interviewsSent }: StatsCardsProps) {
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="dashboard-stats grid grid-cols-2 md:grid-cols-4 gap-4">
       <StatCard 
         label="Total CVs Uploaded" 
         value={totalCvs} 

@@ -135,7 +135,7 @@ export function CandidateDetailModal({
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[700px] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden glass-strong border-foreground/[0.1] bg-background">
+        <DialogContent className="candidate-detail-dialog sm:max-w-[700px] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden glass-strong border-foreground/[0.1] bg-background">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-foreground/[0.06] flex-shrink-0">
             <DialogTitle className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground/[0.06] border border-foreground/[0.1]">
@@ -289,7 +289,7 @@ export function CandidateDetailModal({
 
       {/* ── Confirmation / Sending / Result Dialog ── */}
       <Dialog open={inviteStep !== "idle"} onOpenChange={() => { if (inviteStep !== "sending") resetInvite(); }}>
-        <DialogContent className="sm:max-w-[460px] glass-strong border-foreground/[0.1] bg-background">
+        <DialogContent className="candidate-invite-dialog sm:max-w-[460px] glass-strong border-foreground/[0.1] bg-background">
 
           {/* Step: Confirm — fill in details */}
           {inviteStep === "confirm" && (
