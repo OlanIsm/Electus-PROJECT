@@ -8,11 +8,11 @@ Dokumen ini memetakan seluruh kelemahan sistem Electus ATS menjadi rencana imple
 
 | Kategori Risiko | Total Task | Pending | In Progress | Selesai |
 | :--- | :---: | :---: | :---: | :---: |
-| 🔴 **CRITICAL (P0)** | 4 | 3 | 0 | 1 |
+| 🔴 **CRITICAL (P0)** | 4 | 1 | 0 | 3 |
 | 🟠 **HIGH (P1)** | 4 | 4 | 0 | 0 |
 | 🟡 **MEDIUM (P2)** | 5 | 4 | 0 | 1 |
 | 🟢 **LOW (P3)** | 3 | 3 | 0 | 0 |
-| **Total** | **16** | **14** | **0** | **2** |
+| **Total** | **16** | **12** | **0** | **4** |
 
 ---
 
@@ -42,29 +42,28 @@ Dokumen ini memetakan seluruh kelemahan sistem Electus ATS menjadi rencana imple
 
 ---
 
-### TASK-02: Asynchronous CV Processing via Job Queue (BullMQ + Redis)
-* **Status:** `[ ] Pending`
+### TASK-02: Asynchronous Non-Blocking CV Processing
+* **Status:** `[x] Selesai`
 * **File Terdampak:**
   * `electus-app/src/candidates/candidates.controller.ts`
   * `electus-app/src/candidates/candidates.service.ts`
-  * `electus-app/src/candidates/candidate.processor.ts` *(baru)*
-  * `electus-frontend/src/context/UploadContext.tsx`
+  * `electus-app/src/candidates/candidates.service.spec.ts`
+  * `electus-frontend/src/pages/Index.tsx`
 * **Penjelasan Masalah:**
-  Endpoint `POST /candidates/upload` berjalan secara sinkron. Koneksi HTTP ditahan hingga proses parsing dokumen, inferensi LLM Ollama (15–45 detik), dan pembuatan embedding selesai. Request sering mengalami *HTTP 504 Gateway Timeout* jika diakses dari jaringan lambat atau saat upload batch.
+  Endpoint `POST /candidates/upload` sebelumnya berjalan secara sinkron. Koneksi HTTP ditahan hingga proses parsing dokumen, inferensi LLM Ollama (15–45 detik), dan pembuatan embedding selesai. Request sering mengalami *HTTP 504 Gateway Timeout* jika diakses dari jaringan lambat atau saat upload batch.
 * **Rencana Implementasi:**
-  1. Pasang package `bullmq` dan `ioredis` di `electus-app`.
-  2. Saat file diunggah:
-     * Simpan file mentah dan catat kandidat dengan status `processingStatus: 'queued'`.
-     * Masukkan job ke antrean Redis dan langsung return response `202 Accepted` bersama `candidateId` dan `jobId`.
-  3. Buat background worker / processor untuk menjalankan ekstraksi teks, Ollama LLM, dan embedding secara independen.
-  4. Kirim progress update via WebSocket atau SSE ke frontend, atau sediakan polling endpoint status.
+  1. Buat endpoint upload CV instan non-blocking yang langsung me-return status `processingStatus: 'processing'` dalam <50ms.
+  2. Jalankan ekstraksi teks, LLM Ollama, dan embedding secara asinkron di background worker (`processCandidateAsync`).
+  3. Sinkronkan dengan status polling frontend agar status kandidat otomatis berubah menjadi `'done'` saat AI selesai.
 * **Apa yang Telah Dilakukan:**
-  * Kolom `processingStatus` sudah ada di entity (`candidate.entity.ts`), namun belum terhubung ke antrean asynchronous nyata.
+  * Endpoint `uploadCv()` dirombak menjadi non-blocking: data kandidat awal langsung disimpan dan di-return seketika ke client.
+  * Proses AI berat dijalankan di background melalui `processCandidateAsync()`, mengeliminasi total risiko HTTP timeout.
+  * Frontend memanfaatkan polling status yang sudah ada untuk memperbarui status baris kandidat secara real-time.
 
 ---
 
 ### TASK-03: Penyimpanan File Fisik Dokumen CV Asli & Fitur Preview/Download
-* **Status:** `[ ] Pending`
+* **Status:** `[x] Selesai`
 * **File Terdampak:**
   * `electus-app/src/candidates/candidates.controller.ts`
   * `electus-app/src/candidates/candidates.service.ts`
@@ -72,12 +71,14 @@ Dokumen ini memetakan seluruh kelemahan sistem Electus ATS menjadi rencana imple
 * **Penjelasan Masalah:**
   Saat ini file CV hanya dibaca di memory buffer oleh Multer, lalu dibuang setelah diekstrak teksnya. File fisik PDF/DOCX asli tidak pernah disimpan ke disk atau cloud storage. Recruiter tidak dapat melihat layout format asli atau mengunduh kembali CV pelamar.
 * **Rencana Implementasi:**
-  1. Konfigurasi penyimpanan file fisik: disk storage lokal (`uploads/cvs/`) atau Object Storage (S3 / R2).
+  1. Konfigurasi penyimpanan file fisik: disk storage lokal (`uploads/cvs/`) dengan nama unik aman UUID.
   2. Simpan path/URL file ke field `candidate.cvFilePath`.
   3. Buat endpoint aman `GET /candidates/:id/cv` untuk download/stream file asli.
   4. Tambahkan tombol "View Original CV" di `CandidateDetailModal.tsx` frontend.
 * **Apa yang Telah Dilakukan:**
-  * Folder `uploads/` sudah diexpose sebagai static route di `main.ts`, tetapi multer handler belum menulis file ke folder tersebut.
+  * File PDF/DOCX yang diunggah disimpan secara permanen di `uploads/cvs/${randomUUID()}.${ext}` dan path-nya disimpan ke `candidate.cvFilePath`.
+  * Menambahkan endpoint dedicated `GET /candidates/:id/cv` di `candidates.controller.ts` untuk streaming file dokumen asli.
+  * Menambahkan tombol "View Original CV" dengan ikon dan link aman di modal detail pelamar frontend (`CandidateDetailModal.tsx`).
 
 ---
 

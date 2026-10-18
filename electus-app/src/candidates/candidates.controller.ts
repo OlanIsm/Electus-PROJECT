@@ -11,8 +11,13 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  NotFoundException,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
+import * as fs from 'fs';
+import * as path from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CandidatesService } from './candidates.service';
 import { EmailService } from './email.service';
@@ -155,5 +160,22 @@ export class CandidatesController {
     @Query('target') target?: string,
   ) {
     return this.candidatesService.getCultureFit(id, target);
+  }
+
+  // GET /candidates/:id/cv — Stream / Download original CV file
+  @Get(':id/cv')
+  async downloadCv(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res() res: any,
+  ) {
+    const candidate = await this.candidatesService.findOne(id);
+    if (!candidate.cvFilePath) {
+      throw new NotFoundException('No CV file found for this candidate');
+    }
+    const fullPath = path.join(process.cwd(), candidate.cvFilePath);
+    if (!fs.existsSync(fullPath)) {
+      throw new NotFoundException('CV file not found on disk');
+    }
+    return res.sendFile(fullPath);
   }
 }

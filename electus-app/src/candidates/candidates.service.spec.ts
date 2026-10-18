@@ -10,6 +10,7 @@ const mockCandidateRepository = {
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
+  update: jest.fn(),
   delete: jest.fn(),
   remove: jest.fn(),
   count: jest.fn(),
@@ -135,6 +136,31 @@ describe('CandidatesService', () => {
 
       expect(mockCandidateRepository.delete).toHaveBeenCalledWith(['2']);
       expect(result.message).toBe('Removed 1 duplicate candidates');
+    });
+  });
+
+  describe('uploadCv', () => {
+    it('should save physical CV file and return candidate with processing status', async () => {
+      const mockFile = {
+        originalname: 'john_resume.pdf',
+        mimetype: 'application/pdf',
+        buffer: Buffer.from('%PDF-1.4 mock content'),
+      } as Express.Multer.File;
+
+      mockCandidateRepository.create.mockImplementation((dto) => ({
+        id: 'mock-uuid',
+        ...dto,
+      }));
+      mockCandidateRepository.save.mockImplementation((candidate) =>
+        Promise.resolve(candidate),
+      );
+
+      const result = await service.uploadCv(mockFile);
+
+      expect(mockCandidateRepository.create).toHaveBeenCalled();
+      expect(result.processingStatus).toBe('processing');
+      expect(result.cvFilePath).toContain('/uploads/cvs/');
+      expect(mockCandidateRepository.save).toHaveBeenCalled();
     });
   });
 });

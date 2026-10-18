@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as fs from 'fs';
+import * as path from 'path';
+import { randomUUID } from 'crypto';
 import { Candidate } from './candidate.entity';
 import { AiService } from '../ai/ai.service';
 import { DocumentsService } from '../documents/documents.service';
@@ -124,28 +127,66 @@ export class CandidatesService implements OnModuleInit {
   }
 
   async uploadCv(file: Express.Multer.File): Promise<Candidate> {
-    const cvText = await this.documentsService.extractText(file);
-    const analysis = await this.aiService.analyzeCv(cvText);
-    const embedding = await this.aiService.generateEmbedding(cvText);
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'cvs');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
 
+    const ext = path.extname(file.originalname) || (file.mimetype === 'application/pdf' ? '.pdf' : '.docx');
+    const filename = `${randomUUID()}${ext}`;
+    const filePath = path.join(uploadsDir, filename);
+    await fs.promises.writeFile(filePath, file.buffer);
+    const cvFilePath = `/uploads/cvs/${filename}`;
+
+    const baseName = path.parse(file.originalname).name;
     const candidate = this.candidateRepository.create({
-      fullName: analysis.fullName,
-      email: analysis.email,
-      phone: analysis.phone,
-      skills: analysis.skills,
-      aiSummary: analysis.aiSummary,
-      hollandCode: analysis.hollandCode,
-      education: analysis.education,
-      experience: analysis.experience,
-      hasPortfolio: analysis.hasPortfolio,
-      portfolioUrl: analysis.portfolioUrl,
-      embedding,
+      fullName: baseName,
+      cvFilePath,
       reviewStatus: 'pending',
-      processingStatus: 'done',
-      cvText,
+      processingStatus: 'processing',
+      aiSummary: ['CV is being analyzed by AI in background...'],
     });
-    
-    return this.candidateRepository.save(candidate);
+
+    const savedCandidate = await this.candidateRepository.save(candidate);
+
+    // Fire async background processing without blocking the HTTP request
+    this.processCandidateAsync(savedCandidate.id, file);
+
+    return savedCandidate;
+  }
+
+  /**
+   * Background processor for candidate CV (Text extraction, LLM analysis, Embedding)
+   */
+  async processCandidateAsync(candidateId: string, file: Express.Multer.File): Promise<void> {
+    try {
+      const cvText = await this.documentsService.extractText(file);
+      const analysis = await this.aiService.analyzeCv(cvText);
+      const embedding = await this.aiService.generateEmbedding(cvText);
+
+      await this.candidateRepository.update(candidateId, {
+        fullName: analysis.fullName && analysis.fullName !== 'Unknown' ? analysis.fullName : undefined,
+        email: analysis.email || undefined,
+        phone: analysis.phone || undefined,
+        skills: analysis.skills || [],
+        aiSummary: analysis.aiSummary || [],
+        hollandCode: analysis.hollandCode,
+        education: analysis.education,
+        experience: analysis.experience,
+        hasPortfolio: analysis.hasPortfolio,
+        portfolioUrl: analysis.portfolioUrl,
+        embedding,
+        processingStatus: 'done',
+        cvText,
+      });
+      console.log(`[CandidatesService] Completed background processing for candidate: ${candidateId}`);
+    } catch (err) {
+      console.error(`[CandidatesService] Error during background processing for candidate ${candidateId}:`, err);
+      await this.candidateRepository.update(candidateId, {
+        processingStatus: 'error',
+        aiSummary: ['Failed to analyze CV with AI. Please retry upload.'],
+      });
+    }
   }
 
   /**

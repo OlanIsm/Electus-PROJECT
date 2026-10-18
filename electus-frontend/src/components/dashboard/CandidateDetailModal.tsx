@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles, ExternalLink, User, Link2, Mail, Calendar, Briefcase, CheckCircle2, AlertCircle, Loader2, MessageSquare, Phone } from "lucide-react";
+import { Sparkles, ExternalLink, User, Link2, Mail, Calendar, Briefcase, CheckCircle2, AlertCircle, Loader2, MessageSquare, Phone, FileText } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -209,6 +209,23 @@ export function CandidateDetailModal({
                     <Link2 className="h-3.5 w-3.5" />
                     Portfolio / Website
                     <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              )}
+
+              {/* Original CV Document */}
+              {candidate.cvFilePath && (
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-2">Resume / CV</h3>
+                  <a
+                    href={`http://localhost:3000${candidate.cvFilePath}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    View Original CV
+                    <ExternalLink className="h-3 w-3 ml-0.5" />
                   </a>
                 </div>
               )}
