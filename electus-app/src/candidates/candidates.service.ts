@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Candidate } from './candidate.entity';
@@ -6,13 +6,57 @@ import { AiService } from '../ai/ai.service';
 import { DocumentsService } from '../documents/documents.service';
 
 @Injectable()
-export class CandidatesService {
+export class CandidatesService implements OnModuleInit {
   constructor(
     @InjectRepository(Candidate)
     private candidateRepository: Repository<Candidate>,
     private aiService: AiService,
     private documentsService: DocumentsService,
   ) {}
+
+  async onModuleInit() {
+    await this.initDatabaseFunctions();
+  }
+
+  private async initDatabaseFunctions() {
+    try {
+      await this.candidateRepository.query(`
+        CREATE OR REPLACE FUNCTION cosine_similarity(a double precision[], b double precision[])
+        RETURNS double precision AS $$
+        DECLARE
+            dot_product double precision := 0;
+            norm_a double precision := 0;
+            norm_b double precision := 0;
+            len integer;
+            i integer;
+        BEGIN
+            IF a IS NULL OR b IS NULL THEN
+                RETURN 0;
+            END IF;
+            len := array_length(a, 1);
+            IF len IS NULL OR len != array_length(b, 1) THEN
+                RETURN 0;
+            END IF;
+
+            FOR i IN 1..len LOOP
+                dot_product := dot_product + (a[i] * b[i]);
+                norm_a := norm_a + (a[i] * a[i]);
+                norm_b := norm_b + (b[i] * b[i]);
+            END LOOP;
+
+            IF norm_a = 0 OR norm_b = 0 THEN
+                RETURN 0;
+            END IF;
+
+            RETURN dot_product / (sqrt(norm_a) * sqrt(norm_b));
+        END;
+        $$ LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE;
+      `);
+      console.log('[CandidatesService] Database cosine_similarity function ready.');
+    } catch (err) {
+      console.warn('[CandidatesService] Could not initialize cosine_similarity function:', err);
+    }
+  }
 
   async create(data: Partial<Candidate>) {
     const candidate = this.candidateRepository.create(data);
@@ -105,90 +149,144 @@ export class CandidatesService {
   }
 
   /**
-   * Hybrid Search: Combines semantic (vector) search with text-based search.
-   * - Candidates WITH embeddings get a cosine similarity score
-   * - ALL candidates also get a text-match boost
-   * - Results are sorted by combined score
+   * Hybrid Search: Combines semantic (vector) search with database text-match.
+   * Execution is pushed down entirely to PostgreSQL — zero in-memory OOM risk.
    */
   async semanticSearch(query: string): Promise<Candidate[]> {
-    const allCandidates = await this.candidateRepository.find({
-      order: { createdAt: 'DESC' },
-    });
-
-    console.log(
-      `[Search] Query: "${query}", Total candidates: ${allCandidates.length}`,
-    );
+    console.log(`[Search] Query: "${query}"`);
 
     const queryLower = query.toLowerCase();
-
-    // Step 1: Try to generate query embedding
     const queryEmbedding = await this.aiService.generateEmbedding(query);
-    const hasQueryEmbedding = queryEmbedding.length > 0;
+    const hasQueryEmbedding = Array.isArray(queryEmbedding) && queryEmbedding.length > 0;
 
-    console.log(
-      `[Search] Query embedding generated: ${hasQueryEmbedding} (${queryEmbedding.length} dims)`,
+    const parseJson = (val: any, fallback: any) => {
+      if (typeof val === 'string') {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return fallback;
+        }
+      }
+      return val ?? fallback;
+    };
+
+    if (hasQueryEmbedding) {
+      // Execute database-level vector search with SQL cosine_similarity
+      // Excludes cvText & embedding from payload to minimize network & RAM usage
+      const rawResults = await this.candidateRepository.query(
+        `
+        SELECT 
+          c.id,
+          c."fullName",
+          c.email,
+          c.phone,
+          c."reviewStatus",
+          c."processingStatus",
+          c."aiSummary",
+          c.skills,
+          c."hollandCode",
+          c.education,
+          c.experience,
+          c."portfolioUrl",
+          c."hasPortfolio",
+          c."cvFilePath",
+          c."createdAt",
+          cosine_similarity(c.embedding, $1::double precision[]) AS "semanticScore",
+          CASE 
+            WHEN LOWER(concat_ws(' ', c."fullName", c."cvText", c.skills, c.education, c.experience, c."aiSummary")) LIKE $2 
+            THEN 0.5 
+            ELSE 0.0 
+          END AS "textScore"
+        FROM candidate c
+        WHERE c.embedding IS NOT NULL
+        ORDER BY GREATEST(
+          cosine_similarity(c.embedding, $1::double precision[]),
+          CASE 
+            WHEN LOWER(concat_ws(' ', c."fullName", c."cvText", c.skills, c.education, c.experience, c."aiSummary")) LIKE $2 
+            THEN 0.5 
+            ELSE 0.0 
+          END
+        ) DESC
+        LIMIT 50
+        `,
+        [queryEmbedding, `%${queryLower}%`],
+      );
+
+      return rawResults
+        .map((row: any) => {
+          const semanticScore = parseFloat(row.semanticScore) || 0;
+          const textScore = parseFloat(row.textScore) || 0;
+          const combinedScore = Math.max(semanticScore, textScore);
+
+          if (combinedScore < 0.40) return null;
+
+          return {
+            id: row.id,
+            fullName: row.fullName,
+            email: row.email,
+            phone: row.phone,
+            reviewStatus: row.reviewStatus,
+            processingStatus: row.processingStatus,
+            aiSummary: parseJson(row.aiSummary, []),
+            skills: parseJson(row.skills, []),
+            hollandCode: parseJson(row.hollandCode, null),
+            education: row.education,
+            experience: row.experience,
+            portfolioUrl: row.portfolioUrl,
+            hasPortfolio: row.hasPortfolio,
+            cvFilePath: row.cvFilePath,
+            createdAt: row.createdAt,
+            matchScore: Math.round(combinedScore * 100),
+          };
+        })
+        .filter(Boolean) as Candidate[];
+    }
+
+    // Fallback: If embedding generation is unavailable, perform text search in database
+    const textResults = await this.candidateRepository.query(
+      `
+      SELECT 
+        c.id,
+        c."fullName",
+        c.email,
+        c.phone,
+        c."reviewStatus",
+        c."processingStatus",
+        c."aiSummary",
+        c.skills,
+        c."hollandCode",
+        c.education,
+        c.experience,
+        c."portfolioUrl",
+        c."hasPortfolio",
+        c."cvFilePath",
+        c."createdAt"
+      FROM candidate c
+      WHERE LOWER(concat_ws(' ', c."fullName", c."cvText", c.skills, c.education, c.experience, c."aiSummary")) LIKE $1
+      ORDER BY c."createdAt" DESC
+      LIMIT 50
+      `,
+      [`%${queryLower}%`],
     );
 
-    // Step 2: Score each candidate
-    const scored = allCandidates.map((c) => {
-      let semanticScore = 0;
-      let textScore = 0;
-
-      // Semantic score (if both query and candidate have embeddings)
-      if (hasQueryEmbedding && c.embedding?.length > 0) {
-        semanticScore = this.aiService.cosineSimilarity(
-          queryEmbedding,
-          c.embedding,
-        );
-      }
-
-      // Text-based score — search the FULL CV text + structured fields
-      const haystack = [
-        c.fullName ?? '',
-        c.cvText ?? '',
-        ...(c.skills ?? []),
-        c.education ?? '',
-        c.experience ?? '',
-        ...(c.aiSummary ?? []),
-      ]
-        .join(' ')
-        .toLowerCase();
-
-      // Better text match: score based on keyword matches
-      const keywords = queryLower.split(/\s+/).filter((w) => w.length > 3);
-      if (keywords.length > 0) {
-        let matchedKeywords = 0;
-        for (const word of keywords) {
-          if (haystack.includes(word)) {
-            matchedKeywords++;
-          }
-        }
-        textScore = (matchedKeywords / keywords.length) * 0.5; // Max 0.5 from text
-      } else if (haystack.includes(queryLower)) {
-        textScore = 0.5;
-      }
-
-      const combinedScore = Math.max(semanticScore, textScore);
-      return { candidate: c, score: combinedScore };
-    });
-
-    // Step 3: Filter out low-relevance noise and sort by score descending
-    // Cosine similarity baseline is ~0.2-0.4 for unrelated text, so we
-    // require at least 0.40 (40%) to consider a candidate a real match.
-    const results = scored
-      .filter(({ score }) => score > 0.40)
-      .sort((a, b) => b.score - a.score);
-
-    console.log(`[Search] Results found: ${results.length}`);
-
-    // Step 4: Return as plain objects with matchScore
-    return results.map(({ candidate, score }) => {
-      const plain = JSON.parse(JSON.stringify(candidate));
-      plain.matchScore = Math.round(score * 100);
-      // Don't send huge embedding array to frontend
-      delete plain.embedding;
-      return plain;
-    });
+    return textResults.map((row: any) => ({
+      id: row.id,
+      fullName: row.fullName,
+      email: row.email,
+      phone: row.phone,
+      reviewStatus: row.reviewStatus,
+      processingStatus: row.processingStatus,
+      aiSummary: parseJson(row.aiSummary, []),
+      skills: parseJson(row.skills, []),
+      hollandCode: parseJson(row.hollandCode, null),
+      education: row.education,
+      experience: row.experience,
+      portfolioUrl: row.portfolioUrl,
+      hasPortfolio: row.hasPortfolio,
+      cvFilePath: row.cvFilePath,
+      createdAt: row.createdAt,
+      matchScore: 50,
+    }));
   }
 
   // Unique Feature: Culture-Fit Matcher

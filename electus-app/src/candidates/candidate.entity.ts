@@ -70,8 +70,8 @@ export class Candidate {
   @Column({ nullable: true })
   cvFilePath: string;
 
-  // Vector embedding for semantic search (stored as JSON float array)
-  @Column({ type: 'simple-json', nullable: true })
+  // Vector embedding for database-level semantic search (PostgreSQL float array)
+  @Column('double precision', { array: true, nullable: true })
   embedding: number[];
 
   @CreateDateColumn()

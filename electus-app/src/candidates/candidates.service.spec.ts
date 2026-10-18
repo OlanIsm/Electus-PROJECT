@@ -14,6 +14,7 @@ const mockCandidateRepository = {
   remove: jest.fn(),
   count: jest.fn(),
   clear: jest.fn(),
+  query: jest.fn(),
 };
 
 const mockAiService = {
@@ -68,20 +69,20 @@ describe('CandidatesService', () => {
           id: '1',
           fullName: 'John',
           cvText: 'Experienced developer',
-          skills: [],
+          skills: '[]',
           education: '',
           experience: '',
-          aiSummary: [],
+          aiSummary: '[]',
         },
       ];
-      mockCandidateRepository.find.mockResolvedValue(mockCandidates);
+      mockCandidateRepository.query.mockResolvedValue(mockCandidates);
 
       const result = await service.semanticSearch('john');
 
       expect(mockAiService.generateEmbedding).toHaveBeenCalledWith('john');
       expect(result).toHaveLength(1);
       expect(result[0].fullName).toEqual('John');
-      expect(result[0].matchScore).toBe(50); // 0.5 * 100
+      expect(result[0].matchScore).toBe(50);
     });
 
     it('should score and rank candidates based on semantic and text search', async () => {
@@ -91,36 +92,32 @@ describe('CandidatesService', () => {
         {
           id: '1',
           fullName: 'Backend Engineer',
-          embedding: [0.1, 0.2],
-          cvText: 'NestJS PostgreSQL',
-          skills: ['Node.js'],
+          semanticScore: '0.9',
+          textScore: '0.0',
+          skills: '["Node.js"]',
+          aiSummary: '[]',
         },
         {
           id: '2',
           fullName: 'Frontend Dev',
-          embedding: [-0.1, 0],
-          cvText: 'React CSS',
-          skills: ['React'],
+          semanticScore: '0.5',
+          textScore: '0.0',
+          skills: '["React"]',
+          aiSummary: '[]',
         },
       ];
 
-      mockCandidateRepository.find.mockResolvedValue(mockCandidates);
-
-      // Mock cosine similarity to return 0.9 for candidate 1 and 0.1 for candidate 2
-      mockAiService.cosineSimilarity.mockImplementation((q, e) => {
-        if (e === mockCandidates[0].embedding) return 0.9;
-        return 0.1;
-      });
+      mockCandidateRepository.query.mockResolvedValue(mockCandidates);
 
       const result = await service.semanticSearch('backend');
 
+      expect(mockCandidateRepository.query).toHaveBeenCalled();
       expect(result).toHaveLength(2);
       expect(result[0].fullName).toBe('Backend Engineer');
-      expect(result[0].matchScore).toBe(90); // 0.9 * 100
-      expect(result[0].embedding).toBeUndefined(); // Should be removed from output
+      expect(result[0].matchScore).toBe(90);
 
       expect(result[1].fullName).toBe('Frontend Dev');
-      expect(result[1].matchScore).toBe(10); // 0.1 * 100
+      expect(result[1].matchScore).toBe(50);
     });
   });
 
