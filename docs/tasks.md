@@ -10,10 +10,10 @@ Dokumen ini memetakan seluruh kelemahan sistem Electus ATS menjadi rencana imple
 | Kategori Risiko      | Total Task | Pending | In Progress | Selesai |
 | :-------------------- | :----------: | :-------: | :-----------: | :-------: |
 | 🔴 **CRITICAL (P0)** | 4          | 0       | 0           | 4       |
-| 🟠 **HIGH (P1)**     | 4          | 2       | 0           | 2       |
+| 🟠 **HIGH (P1)**     | 4          | 1       | 0           | 3       |
 | 🟡 **MEDIUM (P2)**   | 5          | 4       | 0           | 1       |
 | 🟢 **LOW (P3)**      | 3          | 3       | 0           | 0       |
-| **Total**            | **16**     | **9**   | **0**       | **7**   |
+| **Total**            | **16**     | **8**   | **0**       | **8**   |
 
 
 ---
@@ -173,13 +173,15 @@ Endpoint `DELETE /candidates/all`, `DELETE /candidates/duplicates`, dan `DELETE 
 
 ---
 
-### TASK-07: Validasi Input Global &amp; Perbaikan DTO
+### TASK-07: Validasi Input Global & Perbaikan DTO
 
-- **Status:** `[ ] Pending`
+- **Status:** `[x] Selesai`
 - **File Terdampak:**
   - `electus-app/src/main.ts`
   - `electus-app/src/auth/dto/login.dto.ts`
   - `electus-app/src/auth/dto/register.dto.ts`
+  - `electus-app/src/candidates/dto/invite-candidate.dto.ts`
+  - `electus-app/src/auth/dto/auth.dto.spec.ts`
   - `electus-app/package.json`
 - **Penjelasan Masalah:**  
 `class-validator` dan `class-transformer` belum terpasang di `electus-app`. `ValidationPipe` global belum diaktifkan di `main.ts`. Payload auth bisa dikirim kosong atau invalid tanpa ada penolakan dari guard/pipe.
@@ -188,7 +190,11 @@ Endpoint `DELETE /candidates/all`, `DELETE /candidates/duplicates`, dan `DELETE 
   2. Daftarkan `app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))` di `main.ts`.
   3. Tambahkan decorator validasi pada DTO (`@IsEmail()`, `@IsString()`, `@MinLength(6)`).
 - **Apa yang Telah Dilakukan:**
-  - Pengecekan dependensi dan isi file DTO auth saat ini.
+  - Package `class-validator` dan `class-transformer` dipasang di `electus-app`.
+  - Global `ValidationPipe({ whitelist: true, transform: true })` diaktifkan di `main.ts`.
+  - Decorator validasi ketat diterapkan pada `LoginDto` (`@IsEmail`, `@IsNotEmpty`, `@IsString`, `@IsOptional`) dan `RegisterDto` (`@IsEmail`, `@IsNotEmpty`, `@IsString`, `@MinLength(6)`).
+  - Dibuat `InviteCandidateDto` dengan validasi `@IsNotEmpty()` untuk penjadwalan interview.
+  - Dibuat unit test komprehensif di `auth.dto.spec.ts` (lulus 100%).
 
 ---
 

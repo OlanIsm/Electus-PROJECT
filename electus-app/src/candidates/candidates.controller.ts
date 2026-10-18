@@ -26,6 +26,7 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { UserRole } from '../users/user.entity';
+import { InviteCandidateDto } from './dto/invite-candidate.dto';
 
 @Controller('candidates')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -127,7 +128,7 @@ export class CandidatesController {
   @Post(':id/invite')
   async sendInvite(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { jobTitle: string; interviewDate: string; hrName: string; customMessage?: string },
+    @Body() body: InviteCandidateDto,
     @CurrentUser() user: any,
   ) {
     const candidate = await this.candidatesService.findOne(id, user?.companyId);

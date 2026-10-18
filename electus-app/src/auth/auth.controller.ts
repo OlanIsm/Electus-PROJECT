@@ -13,14 +13,14 @@ export class AuthController {
   @Post('register')
   async register(@Body() body: RegisterDto) {
     const { DeviceName, FullName, Email, Password } = body;
-    return this.authService.register(DeviceName, FullName, Email, Password);
+    return this.authService.register(DeviceName || 'Browser Client', FullName, Email, Password);
   }
 
   @ApiOperation({ summary: 'Login user' })
   @Post('login')
   async login(@Body() body: LoginDto) {
     const { DeviceName, Email, Password } = body;
-    return this.authService.login(DeviceName, Email, Password);
+    return this.authService.login(DeviceName || 'Browser Client', Email, Password);
   }
 
   @ApiOperation({ summary: 'Logout user' })

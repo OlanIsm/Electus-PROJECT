@@ -10,7 +10,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(deviceName: string, fullName: string, email: string, passwordHash: string) {
+  async register(deviceName: string | undefined, fullName: string, email: string, passwordHash: string) {
     const existing = await this.usersService.findByEmail(email);
     if (existing) {
       throw new ConflictException('Email already registered');
@@ -52,7 +52,7 @@ export class AuthService {
     };
   }
 
-  async login(deviceName: string, email: string, passwordHash: string) {
+  async login(deviceName: string | undefined, email: string, passwordHash: string) {
     const user = await this.usersService.findByEmail(email);
     if (!user || !user.password) {
       throw new UnauthorizedException('Invalid credentials');
