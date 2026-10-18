@@ -10,9 +10,9 @@ Dokumen ini memetakan seluruh kelemahan sistem Electus ATS menjadi rencana imple
 | :--- | :---: | :---: | :---: | :---: |
 | 🔴 **CRITICAL (P0)** | 4 | 3 | 0 | 1 |
 | 🟠 **HIGH (P1)** | 4 | 4 | 0 | 0 |
-| 🟡 **MEDIUM (P2)** | 5 | 5 | 0 | 0 |
+| 🟡 **MEDIUM (P2)** | 5 | 4 | 0 | 1 |
 | 🟢 **LOW (P3)** | 3 | 3 | 0 | 0 |
-| **Total** | **16** | **15** | **0** | **1** |
+| **Total** | **16** | **14** | **0** | **2** |
 
 ---
 
@@ -217,16 +217,22 @@ Dokumen ini memetakan seluruh kelemahan sistem Electus ATS menjadi rencana imple
 ---
 
 ### TASK-12: Optimasi Transfer Dokumen Antar-Service (Stream vs Base64)
-* **Status:** `[ ] Pending`
+* **Status:** `[x] Selesai`
 * **File Terdampak:**
   * `electus-app/src/documents/documents.service.ts`
-  * `electus-documents/src/documents.controller.ts`
+  * `electus-app/src/ai/ai.service.ts`
+  * `start-electus.bat`
+  * `start-backend.command`
 * **Penjelasan Masalah:**
-  File dikonversi menjadi string Base64 dalam JSON payload, memicu lonjakan memori RAM hingga ratusan MB saat banyak file diupload bersamaan.
+  File dikonversi menjadi string Base64 dalam JSON payload, memicu lonjakan memori RAM hingga ratusan MB saat banyak file diupload bersamaan karena pemisahan arsitektur yang artifisial.
 * **Rencana Implementasi:**
-  1. Gunakan multipart streaming antar-microservice atau gunakan shared object storage/volume disk.
+  1. Konsolidasikan arsitektur menjadi Modular Monolith.
+  2. Pindahkan parser dokumen (`pdf-parse`, `mammoth`) langsung ke `DocumentsService` di `electus-app`.
+  3. Pindahkan klien Ollama langsung ke `AiService` di `electus-app`.
 * **Apa yang Telah Dilakukan:**
-  * Review metode `file.buffer.toString('base64')` di `electus-app/src/documents/documents.service.ts`.
+  * Telah mengintegrasikan ekstraksi file PDF dan DOCX secara in-memory langsung di `DocumentsService` (`electus-app`).
+  * Menghilangkan seluruh encoding Base64 dan overhead request HTTP antar-port lokal.
+  * Memperbarui file launcher startup (`start-electus.bat` dan `start-backend.command`) agar hanya menyalakan Backend Monolith (port 3000) dan Frontend (port 5173).
 
 ---
 

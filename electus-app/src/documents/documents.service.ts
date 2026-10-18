@@ -1,40 +1,44 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import * as mammoth from 'mammoth';
 
-const DOCUMENT_SERVICE_URL =
-  process.env.DOCUMENT_SERVICE_URL || 'http://localhost:3003';
+// pdf-parse v1.1.1 export
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse = require('pdf-parse');
 
 @Injectable()
 export class DocumentsService {
   /**
-   * Calls the Document Service microservice to extract text from a file.
-   * Sends file as base64 JSON to avoid multipart/FormData issues in Node.js.
+   * Directly extracts raw text from PDF or DOCX file buffer in-memory.
+   * Zero external HTTP network hops, zero base64 payload overhead.
    */
   async extractText(file: Express.Multer.File): Promise<string> {
-    try {
-      const response = await fetch(
-        `${DOCUMENT_SERVICE_URL}/documents/extract`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            buffer: file.buffer.toString('base64'),
-            filename: file.originalname,
-            mimetype: file.mimetype,
-            size: file.size,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        const err = await response.text();
-        throw new Error(`Document Service error: ${response.status} - ${err}`);
-      }
-
-      const data = (await response.json()) as { text: string };
-      return data.text;
-    } catch (error) {
-      console.error('Failed to call Document Service:', error);
-      throw error;
+    if (!file || !file.buffer) {
+      throw new BadRequestException('No file buffer provided for text extraction');
     }
+
+    if (file.mimetype === 'application/pdf') {
+      try {
+        const parsed = await pdfParse(file.buffer);
+        return parsed.text ?? '';
+      } catch (err) {
+        console.error('Failed to parse PDF document:', err);
+        throw new BadRequestException('Failed to extract text from PDF document');
+      }
+    }
+
+    if (
+      file.mimetype ===
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
+      try {
+        const result = await mammoth.extractRawText({ buffer: file.buffer });
+        return result.value ?? '';
+      } catch (err) {
+        console.error('Failed to parse DOCX document:', err);
+        throw new BadRequestException('Failed to extract text from DOCX document');
+      }
+    }
+
+    throw new BadRequestException(`Unsupported file format: ${file.mimetype}`);
   }
 }
