@@ -5,6 +5,9 @@ describe('AiService', () => {
   let service: AiService;
 
   beforeEach(async () => {
+    delete process.env.GEMINI_API_KEY;
+    delete process.env.AI_PROVIDER;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [AiService],
     }).compile();
@@ -32,7 +35,7 @@ describe('AiService', () => {
       const vecA = [1, 0];
       const vecB = [0, 1];
       const result = service.cosineSimilarity(vecA, vecB);
-      expect(result).toBeCloseTo(0);
+      expect(result).toBe(0);
     });
 
     it('should return 0 for empty vectors', () => {
@@ -48,7 +51,7 @@ describe('AiService', () => {
     });
   });
 
-  describe('generateEmbedding', () => {
+  describe('generateEmbedding (Ollama)', () => {
     it('should call fetch and return embeddings array', async () => {
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
@@ -84,7 +87,7 @@ describe('AiService', () => {
     });
   });
 
-  describe('analyzeCv', () => {
+  describe('analyzeCv (Ollama)', () => {
     it('should parse Ollama JSON response and transform holland code', async () => {
       const mockResponse = {
         fullName: 'John Doe',
@@ -118,6 +121,64 @@ describe('AiService', () => {
       expect(
         result.hollandCode.distribution.find((d) => d.code === 'I')?.value,
       ).toBe(50);
+    });
+  });
+
+  describe('Gemini Integration', () => {
+    it('should call Gemini generateContent and parse CV analysis', async () => {
+      process.env.GEMINI_API_KEY = 'fake-gemini-key';
+      process.env.AI_PROVIDER = 'gemini';
+
+      const mockResponse = {
+        fullName: 'Jane Smith',
+        email: 'jane@example.com',
+        education: "Master's",
+        experience: 'Senior',
+        skills: ['TypeScript', 'NestJS'],
+        aiSummary: ['Senior backend engineer with strong architecture skills.'],
+        hasPortfolio: true,
+        portfolioUrl: 'https://github.com/janesmith',
+        hollandCode: {
+          primary: 'I',
+          distribution: { R: 10, I: 60, A: 10, S: 10, E: 5, C: 5 },
+        },
+      };
+
+      const mockGenerateContent = jest.fn().mockResolvedValue({
+        text: JSON.stringify(mockResponse),
+      });
+
+      (service as any).geminiClient = {
+        models: {
+          generateContent: mockGenerateContent,
+        },
+      };
+
+      const result = await service.analyzeCv('cv text for Jane');
+      expect(mockGenerateContent).toHaveBeenCalled();
+      expect(result.fullName).toBe('Jane Smith');
+      expect(result.experience).toBe('Senior');
+      expect(result.hollandCode.label).toBe('Thinker');
+      expect(result.hollandCode.distribution.length).toBe(6);
+    });
+
+    it('should call Gemini embedContent and return vector values', async () => {
+      process.env.GEMINI_API_KEY = 'fake-gemini-key';
+      process.env.AI_PROVIDER = 'gemini';
+
+      const mockEmbedContent = jest.fn().mockResolvedValue({
+        embeddings: [{ values: [0.123, 0.456, 0.789] }],
+      });
+
+      (service as any).geminiClient = {
+        models: {
+          embedContent: mockEmbedContent,
+        },
+      };
+
+      const result = await service.generateEmbedding('query text');
+      expect(mockEmbedContent).toHaveBeenCalled();
+      expect(result).toEqual([0.123, 0.456, 0.789]);
     });
   });
 });

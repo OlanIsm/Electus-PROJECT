@@ -11,9 +11,9 @@ Dokumen ini memetakan seluruh kelemahan sistem Electus ATS menjadi rencana imple
 | :-------------------- | :----------: | :-------: | :-----------: | :-------: |
 | 🔴 **CRITICAL (P0)** | 4          | 0       | 0           | 4       |
 | 🟠 **HIGH (P1)**     | 4          | 1       | 0           | 3       |
-| 🟡 **MEDIUM (P2)**   | 5          | 4       | 0           | 1       |
+| 🟡 **MEDIUM (P2)**   | 5          | 3       | 0           | 2       |
 | 🟢 **LOW (P3)**      | 3          | 3       | 0           | 0       |
-| **Total**            | **16**     | **8**   | **0**       | **8**   |
+| **Total**            | **16**     | **7**   | **0**       | **9**   |
 
 
 ---
@@ -236,18 +236,27 @@ Semua daftar kandidat ditarik sekaligus tanpa paginasi.
 
 ---
 
-### TASK-10: Peningkatan Parsing CV Panjang (Hilangkan Batas Keras 6.000 Karakter)
+### TASK-10: Peningkatan Parsing CV Panjang (Hilangkan Batas Keras 6.000 Karakter) & Integrasi Pipeline Gemini
 
-- **Status:** `[ ] Pending`
+- **Status:** `[x] Selesai`
 - **File Terdampak:**
-  - `electus-ai/src/ai.service.ts`
+  - `electus-app/src/ai/ai.service.ts`
+  - `electus-app/src/ai/ai.service.spec.ts`
+  - `electus-app/.env`
+  - `electus-app/.env.example`
 - **Penjelasan Masalah:**  
-Potongan teks CV dibatasi secara kaku dengan `cvText.slice(0, 6000)` sehingga bagian belakang CV kandidat berpengalaman terpotong.
+Potongan teks CV sebelumnya dibatasi kaku sehingga CV panjang terpotong. Selain itu, beban inferensi AI bergantung penuh pada Ollama lokal.
 - **Rencana Implementasi:**
-  1. Naikkan context window atau terapkan sistem chunking / summarization bertahap untuk CV yang sangat panjang.
-  2. Pastikan prompt LLM tetap efisien tanpa membuang informasi riwayat kerja dan sertifikasi.
+  1. Naikkan context window (hingga 30.000 karakter) dan integrasikan Google Gemini API (`gemini-3.5-flash-lite`) via SDK `@google/genai` dengan JSON structured response.
+  2. Integrasikan model embedding cloud `gemini-embedding-001` dengan output 768 dimensi yang kompatibel langsung dengan database pgvector PostgreSQL.
+  3. Pasang proteksi retry exponential backoff pada HTTP 429 rate limiting.
 - **Apa yang Telah Dilakukan:**
-  - Identifikasi pemotongan string di `electus-ai/src/ai.service.ts` baris 72.
+  - `AiService` dimigrasikan untuk mendukung mode hybrid: Gemini API cloud default dengan fallback otomatis ke Ollama lokal jika offline / non-API.
+  - Context window dinaikkan menjadi 30.000 karakter.
+  - Dukungan Gemini structured JSON extraction & 768-dim embedding (`gemini-embedding-001`).
+  - Mekanisme exponential backoff retry pada kode HTTP 429 / RESOURCE_EXHAUSTED.
+  - Vektor embedding 4 kandidat eksisting di PostgreSQL berhasil di-re-embed ke representasi Gemini.
+  - Unit test `ai.service.spec.ts` diperbarui dengan 100% kelulusan (30 test lulus).
 
 ---
 
