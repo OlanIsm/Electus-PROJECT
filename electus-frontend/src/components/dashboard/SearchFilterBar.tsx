@@ -15,6 +15,8 @@ interface SearchFilterBarProps {
   onEducationChange: (value: string) => void;
   experienceFilter: string;
   onExperienceChange: (value: string) => void;
+  statusFilter: string;
+  onStatusChange: (value: string) => void;
 }
 
 export function SearchFilterBar({
@@ -24,22 +26,24 @@ export function SearchFilterBar({
   onEducationChange,
   experienceFilter,
   onExperienceChange,
+  statusFilter,
+  onStatusChange,
 }: SearchFilterBarProps) {
   return (
-    <div className="dashboard-filters flex flex-wrap items-center gap-3">
-      <div className="candidate-search relative flex-1 min-w-0 basis-56">
+    <div className="dashboard-filters flex flex-wrap items-center gap-3 animate-fade-in">
+      <div className="candidate-search relative flex-1 min-w-[280px]">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
         <Input
           aria-label="Search candidates by context, skills, or roles"
           placeholder="Search candidates by context, skills, or roles..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10 h-10 bg-background"
+          className="pl-10 h-10 border border-primary/20 hover:border-primary/40 focus:border-primary/60 focus-visible:border-primary/60 focus-visible:ring-1 focus-visible:ring-primary/30 bg-primary/[0.04] hover:bg-primary/[0.07] dark:bg-primary/[0.06] dark:hover:bg-primary/[0.09] text-foreground placeholder:text-foreground/45 transition-all duration-200 backdrop-blur-md"
         />
       </div>
 
       <Select value={educationFilter} onValueChange={onEducationChange}>
-        <SelectTrigger aria-label="Education" className="w-[160px] h-10 bg-background">
+        <SelectTrigger className="w-[160px] h-10 border border-primary/20 hover:border-primary/40 focus:border-primary/60 focus:ring-1 focus:ring-primary/30 bg-primary/[0.04] hover:bg-primary/[0.07] dark:bg-primary/[0.06] dark:hover:bg-primary/[0.09] text-foreground/80 transition-all duration-200 backdrop-blur-md">
           <SelectValue placeholder="Education Level" />
         </SelectTrigger>
         <SelectContent className="glass-strong border-foreground/[0.1] bg-popover">
@@ -52,7 +56,7 @@ export function SearchFilterBar({
       </Select>
 
       <Select value={experienceFilter} onValueChange={onExperienceChange}>
-        <SelectTrigger aria-label="Experience" className="w-[160px] h-10 bg-background">
+        <SelectTrigger className="w-[160px] h-10 border border-primary/20 hover:border-primary/40 focus:border-primary/60 focus:ring-1 focus:ring-primary/30 bg-primary/[0.04] hover:bg-primary/[0.07] dark:bg-primary/[0.06] dark:hover:bg-primary/[0.09] text-foreground/80 transition-all duration-200 backdrop-blur-md">
           <SelectValue placeholder="Experience Level" />
         </SelectTrigger>
         <SelectContent className="glass-strong border-foreground/[0.1] bg-popover">
@@ -63,6 +67,16 @@ export function SearchFilterBar({
         </SelectContent>
       </Select>
 
+      <Select value={statusFilter} onValueChange={onStatusChange}>
+        <SelectTrigger className="w-[150px] h-10 border border-primary/20 hover:border-primary/40 focus:border-primary/60 focus:ring-1 focus:ring-primary/30 bg-primary/[0.04] hover:bg-primary/[0.07] dark:bg-primary/[0.06] dark:hover:bg-primary/[0.09] text-foreground/80 transition-all duration-200 backdrop-blur-md">
+          <SelectValue placeholder="Review Status" />
+        </SelectTrigger>
+        <SelectContent className="glass-strong border-foreground/[0.1] bg-popover">
+          <SelectItem value="all">All Status</SelectItem>
+          <SelectItem value="pending">Pending</SelectItem>
+          <SelectItem value="reviewed">Reviewed</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }

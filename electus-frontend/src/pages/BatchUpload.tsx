@@ -36,7 +36,7 @@ const statusConfig: Record<FileStatus, { label: string; className: string }> = {
   },
   extracting: {
     label: "Uploading & Extracting...",
-    className: "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30",
+    className: "bg-amber-500/15 text-amber-400 border-amber-500/30",
   },
   completed: {
     label: "Completed",
@@ -96,19 +96,19 @@ export default function BatchUpload() {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="workspace-title">
+      <div className="mb-8 animate-fade-in">
+        <h1 className="text-2xl font-semibold text-foreground tracking-tight">
           Batch Upload Candidates
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-foreground/40">
           Upload multiple PDF resumes. Our AI will automatically extract text,
           generate summaries, and vectorize them for semantic search.
         </p>
       </div>
 
       {/* Upload Zone */}
-      <div className="border bg-card rounded-xl mb-8">
-        <div className="p-4 sm:p-8">
+      <div className="glass glass-plasma rounded-xl mb-8 animate-fade-in">
+        <div className="p-8">
           <div
             onDragOver={(e) => {
               e.preventDefault();
@@ -119,7 +119,7 @@ export default function BatchUpload() {
             onClick={() => inputRef.current?.click()}
             className={`
               relative flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed 
-              py-16 cursor-pointer transition-colors duration-200
+              py-16 cursor-pointer transition-all duration-200
               ${
                 isDragOver
                   ? "border-primary bg-primary/[0.06] scale-[1.01]"
@@ -145,7 +145,7 @@ export default function BatchUpload() {
             >
               <CloudUpload
                 className={`h-8 w-8 transition-colors ${
-                  isDragOver ? "text-primary" : "text-muted-foreground"
+                  isDragOver ? "text-primary" : "text-foreground/40"
                 }`}
               />
             </div>
@@ -153,15 +153,15 @@ export default function BatchUpload() {
               <p className="text-base font-semibold text-foreground">
                 Click or drag to upload CVs
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-foreground/35">
                 Supports PDF, DOCX (Max 10MB per file)
               </p>
             </div>
           </div>
 
           {/* Start button */}
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-6 flex items-center justify-between">
+            <p className="text-sm text-foreground/40">
               {files.length === 0
                 ? "No files selected"
                 : `${files.length} file${files.length > 1 ? "s" : ""} · ${pendingCount} pending · ${completedCount} completed`}
@@ -184,7 +184,7 @@ export default function BatchUpload() {
 
       {/* Processing Queue */}
       {files.length > 0 && (
-        <div className="glass rounded-xl">
+        <div className="glass rounded-xl animate-fade-in">
           <div className="px-6 pt-5 pb-4">
             <h3 className="text-base font-semibold text-foreground">Processing Queue</h3>
           </div>
@@ -195,7 +195,7 @@ export default function BatchUpload() {
                 return (
                   <div
                     key={file.id}
-                    className="flex items-center flex-wrap gap-3 px-4 py-4 sm:px-6 transition-colors hover:bg-foreground/[0.02]"
+                    className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-foreground/[0.02]"
                   >
                     {/* Icon */}
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-foreground/[0.06] border border-foreground/[0.08]">

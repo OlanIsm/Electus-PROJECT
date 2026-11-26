@@ -363,9 +363,9 @@ Ada dependensi yang tidak terpakai (seperti `@google/genai`, `pdf-parse`, `mammo
   - Review `gemini.service.ts` dan `package.json`.
 
 
-## Frontend redesign
+## Candidate search
 
-- [x] Rebuilt the recruitment overview around review progress, CV upload, and the candidate queue.
-- [x] Unified responsive workspace, account, upload, analytics, and public pages in light and dark themes.
-- [x] Connected analytics date ranges to CV upload dates and removed placeholder processing and billing figures.
-- [x] Verified the production build, nine frontend tests, and all nine routes at desktop and mobile widths with mocked candidate data.
+- [x] Restore the frontend design used before the recruitment overview redesign.
+- [x] Add a protected Search page that submits on Enter and lists candidates in hybrid search order.
+- [x] Break equal hybrid scores by semantic similarity, then upload date and candidate ID.
+- [x] Reuse candidate detail and review actions with blind screening enabled.

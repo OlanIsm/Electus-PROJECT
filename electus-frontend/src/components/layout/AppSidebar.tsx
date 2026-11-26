@@ -1,4 +1,4 @@
-import { LayoutDashboard, Upload, BarChart3, User, LogOut } from "lucide-react";
+import { LayoutDashboard, Search, Upload, BarChart3, User, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -15,6 +15,7 @@ import {
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Search", url: "/search", icon: Search },
   { title: "Batch Upload", url: "/upload", icon: Upload },
   { title: "Statistics", url: "/statistics", icon: BarChart3 },
   { title: "Account", url: "/account", icon: User },
@@ -46,23 +47,27 @@ export function AppSidebar() {
 
   return (
     <>
-      <aside className="dashboard-sidebar">
+      <aside className="dashboard-sidebar fixed left-0 top-0 z-30 flex h-screen w-60 flex-col glass-sidebar">
         {/* Logo */}
-        <div className="sidebar-brand">
-          <span className="brand-mark" aria-hidden="true"><LayoutDashboard size={17} /></span>
-          <span>Electus</span>
+        <div className="sidebar-brand flex flex-col gap-1 px-5 py-6 border-b border-foreground/[0.06]">
+          <div className="flex items-center gap-2">
+            <img src="/Logo.png" alt="Electus Logo" className="h-10 w-auto object-contain rounded-md" />
+          </div>
+          <span className="text-[11px] font-medium text-foreground/40 tracking-wide uppercase">
+            AI-Powered ATS
+          </span>
         </div>
 
         {/* Navigation */}
-        <nav aria-label="Main navigation" className="sidebar-navigation">
+        <nav aria-label="Main navigation" className="sidebar-navigation flex-1 px-3 py-4 space-y-1">
           {navItems.map((item) => (
             <NavLink
               key={item.title}
               to={item.url}
               end
               title={item.title}
-              className="sidebar-link"
-              activeClassName="sidebar-link-active"
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground/50 transition-all hover:bg-foreground/[0.06] hover:text-foreground/80"
+              activeClassName="bg-foreground/[0.08] text-foreground font-semibold shadow-[inset_0_1px_0_var(--glass-border)] glow-teal"
             >
               <item.icon className="h-4 w-4" />
               <span>{item.title}</span>
@@ -70,10 +75,19 @@ export function AppSidebar() {
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          <button onClick={() => setShowLogoutDialog(true)} aria-label="Log out" className="sidebar-link">
-            <LogOut className="h-4 w-4" /> <span>Log out</span>
+        {/* Footer */}
+        <div className="sidebar-footer border-t border-foreground/[0.06] px-3 py-4 flex flex-col gap-2">
+          <button
+            onClick={() => setShowLogoutDialog(true)}
+            title="Log out"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400/70 transition-all hover:bg-red-500/10 hover:text-red-400"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Log out</span>
           </button>
+          <p className="text-[11px] text-foreground/40 px-3">
+            © 2026 Electus ATS
+          </p>
         </div>
       </aside>
 

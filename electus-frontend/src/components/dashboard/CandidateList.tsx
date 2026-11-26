@@ -6,42 +6,64 @@ interface CandidateListProps {
   candidates: Candidate[];
   blindMode: boolean;
   searchActive: boolean;
-  statusFilter: string;
-  onStatusChange: (value: string) => void;
   onViewProfile: (candidate: Candidate) => void;
   onToggleStatus: (id: string) => void;
 }
 
-const views = [
-  { value: "all", label: "All candidates" },
-  { value: "pending", label: "Pending review" },
-  { value: "reviewed", label: "Reviewed" },
-];
-
 export function CandidateList({
-  candidates, blindMode, searchActive, statusFilter, onStatusChange, onViewProfile, onToggleStatus,
+  candidates,
+  blindMode,
+  searchActive,
+  onViewProfile,
+  onToggleStatus,
 }: CandidateListProps) {
-  const groups = views.map(view => ({
-    ...view,
-    rows: view.value === "all" ? candidates : candidates.filter(candidate => candidate.reviewStatus === view.value),
-  }));
+  const pending = candidates.filter((c) => c.reviewStatus === "pending");
+  const reviewed = candidates.filter((c) => c.reviewStatus === "reviewed");
 
   return (
-    <Tabs value={statusFilter} onValueChange={onStatusChange} className="candidate-tabs">
-      <TabsList aria-label="Candidate review status">
-        {groups.map(view => (
-          <TabsTrigger key={view.value} value={view.value}>{view.label} <span>{view.rows.length}</span></TabsTrigger>
-        ))}
+    <Tabs defaultValue="pending" className="candidate-tabs animate-fade-in">
+      <TabsList className="bg-foreground/[0.04] border border-foreground/[0.08] h-9">
+        <TabsTrigger value="pending" className="text-xs text-foreground/50 data-[state=active]:bg-foreground/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+          Pending Review ({pending.length})
+        </TabsTrigger>
+        <TabsTrigger value="reviewed" className="text-xs text-foreground/50 data-[state=active]:bg-foreground/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+          Reviewed ({reviewed.length})
+        </TabsTrigger>
       </TabsList>
-      {groups.map(view => (
-        <TabsContent key={view.value} value={view.value}>
-          {view.rows.map(candidate => (
-            <CandidateRow key={candidate.id} candidate={candidate} blindMode={blindMode}
-              showMatchScore={searchActive} onViewProfile={onViewProfile} onToggleStatus={onToggleStatus} />
-          ))}
-          {!view.rows.length && <p className="px-4 py-10 text-center text-sm text-muted-foreground">No candidates in this view.</p>}
-        </TabsContent>
-      ))}
+
+      <TabsContent value="pending" className="mt-3 space-y-2">
+        {pending.length === 0 ? (
+          <p className="py-8 text-center text-sm text-foreground/30">No pending candidates</p>
+        ) : (
+          pending.map((c) => (
+            <CandidateRow
+              key={c.id}
+              candidate={c}
+              blindMode={blindMode}
+              showMatchScore={searchActive}
+              onViewProfile={onViewProfile}
+              onToggleStatus={onToggleStatus}
+            />
+          ))
+        )}
+      </TabsContent>
+
+      <TabsContent value="reviewed" className="mt-3 space-y-2">
+        {reviewed.length === 0 ? (
+          <p className="py-8 text-center text-sm text-foreground/30">No reviewed candidates</p>
+        ) : (
+          reviewed.map((c) => (
+            <CandidateRow
+              key={c.id}
+              candidate={c}
+              blindMode={blindMode}
+              showMatchScore={searchActive}
+              onViewProfile={onViewProfile}
+              onToggleStatus={onToggleStatus}
+            />
+          ))
+        )}
+      </TabsContent>
     </Tabs>
   );
 }

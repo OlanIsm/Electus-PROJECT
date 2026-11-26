@@ -284,7 +284,7 @@ export class CandidatesService implements OnModuleInit {
             THEN 0.5 
             ELSE 0.0 
           END
-        ) DESC
+        ) DESC, "semanticScore" DESC, c."createdAt" DESC, c.id
         LIMIT 50
         `,
         queryParams,

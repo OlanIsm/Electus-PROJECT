@@ -1,4 +1,3 @@
-import { PublicHeader } from "@/components/layout/PublicHeader";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -74,28 +73,31 @@ const SignUp = () => {
   };
 
   return (
-    <div className="public-shell">
-      <PublicHeader />
-      <div className="text-foreground flex justify-center px-4 py-10 sm:py-16">
+    <div className="dark">
+      <div className="text-foreground min-h-screen blueprint-bg flex items-center justify-center p-6 selection:bg-teal-500/30">
       
       {/* Decorative Background */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg h-[500px] bg-teal-500/10 blur-[100px] rounded-full pointer-events-none" />
 
-      <div className="w-full max-w-md ">
+      <div className="w-full max-w-md relative z-10 animate-fade-in">
         <button 
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 transition-colors"
+          className="flex items-center gap-2 text-sm text-foreground/50 hover:text-foreground mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </button>
 
-        <div className="rounded-xl border bg-card p-5 sm:p-8">
-          <div className="mb-6">
+        <div className="glass-strong border border-foreground/[0.08] p-8 rounded-2xl shadow-2xl bg-background/80 backdrop-blur-xl">
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-4">
+              <img src="/Logo.png" alt="Electus Logo" className="h-10 w-auto object-contain rounded-md" />
+            </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">Create your account</h1>
-            <p className="text-sm text-muted-foreground">Get started with Electus ATS for free</p>
+            <p className="text-sm text-foreground/40">Get started with Electus ATS for free</p>
           </div>
 
           {error && (
-            <div role="alert" className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm p-3 rounded-lg text-center mb-5 animate-fade-in">
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm p-3 rounded-lg text-center mb-5 animate-fade-in">
               {error}
             </div>
           )}
@@ -115,7 +117,7 @@ const SignUp = () => {
                 placeholder="John Doe" 
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="bg-foreground/[0.03] border-input text-foreground placeholder:text-muted-foreground"
+                className="bg-foreground/[0.03] border-foreground/[0.1] text-foreground placeholder:text-foreground/20 focus:border-teal-500/50"
                 required 
               />
             </div>
@@ -128,7 +130,7 @@ const SignUp = () => {
                 placeholder="name@company.com" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-foreground/[0.03] border-input text-foreground placeholder:text-muted-foreground"
+                className="bg-foreground/[0.03] border-foreground/[0.1] text-foreground placeholder:text-foreground/20 focus:border-teal-500/50"
                 required 
               />
             </div>
@@ -141,7 +143,7 @@ const SignUp = () => {
                 placeholder="••••••••" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="bg-foreground/[0.03] border-input text-foreground placeholder:text-muted-foreground"
+                className="bg-foreground/[0.03] border-foreground/[0.1] text-foreground placeholder:text-foreground/20 focus:border-teal-500/50"
                 required 
               />
             </div>
@@ -154,7 +156,7 @@ const SignUp = () => {
                 placeholder="••••••••" 
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-foreground/[0.03] border-input text-foreground placeholder:text-muted-foreground"
+                className="bg-foreground/[0.03] border-foreground/[0.1] text-foreground placeholder:text-foreground/20 focus:border-teal-500/50"
                 required 
               />
             </div>
@@ -162,15 +164,15 @@ const SignUp = () => {
             <Button 
               type="submit" 
               disabled={loading}
-              className="w-full  mt-2"
+              className="w-full bg-teal-500 hover:bg-teal-400 text-white font-medium shadow-[0_0_20px_rgba(20,184,166,0.3)] mt-2"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
+          <div className="mt-6 text-center text-sm text-foreground/40">
             Already have an account?{" "}
-            <button onClick={() => navigate('/login')} className="text-primary hover:underline font-medium">
+            <button onClick={() => navigate('/login')} className="text-teal-400 hover:text-teal-300 font-medium">
               Sign in
             </button>
           </div>
