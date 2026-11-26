@@ -1,5 +1,5 @@
 import { AppSidebar } from "./AppSidebar";
-import "./dashboard-light.css";
+import "./workspace.css";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -7,10 +7,10 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="dashboard-shell min-h-screen blueprint-bg">
+    <div className="dashboard-shell min-h-screen">
       <AppSidebar />
-      <main className="dashboard-main relative z-10 ml-60 min-h-screen">
-        <div className="dashboard-content mx-auto max-w-[1200px] px-8 py-6">
+      <main className="dashboard-main min-w-0">
+        <div className="dashboard-content">
           {children}
         </div>
       </main>

@@ -27,7 +27,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => (
-  <ThemeProvider defaultTheme="dark" storageKey="electus-theme">
+  <ThemeProvider defaultTheme="light" storageKey="electus-theme">
     <QueryClientProvider client={queryClient}>
       <UploadProvider>
         <TooltipProvider>

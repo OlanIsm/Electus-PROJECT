@@ -1,12 +1,10 @@
+import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Mail, Briefcase, Building2, CreditCard, Zap, Sparkles } from "lucide-react";
+import { User, Mail, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Slider } from "@/components/ui/slider";
 
@@ -16,8 +14,7 @@ const themes = ["light", "dark", "system"] as const;
 
 export default function Account() {
   const { theme, setTheme } = useTheme();
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [fullName, setFullName] = useState(() => localStorage.getItem('electus-user-name') || 'Sarah Chen');
+  const [fullName, setFullName] = useState(() => localStorage.getItem('electus-user-name') || '');
   const [saved, setSaved] = useState(false);
 
   const [cultureR, setCultureR] = useState(() => {
@@ -75,17 +72,17 @@ export default function Account() {
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="workspace-title">
           Account Settings
         </h1>
         <p className="mt-1 text-sm text-foreground/60">
-          Manage your profile, preferences, and subscription plan.
+          Manage your profile, display, and screening preferences.
         </p>
       </div>
 
       <div className="space-y-6 max-w-3xl">
         {/* Card 1: Profile & Organization */}
-        <div className="glass glass-plasma rounded-xl">
+        <div className="border bg-card rounded-xl">
           <div className="px-6 pt-5 pb-3">
             <h3 className="text-lg font-semibold text-foreground">Profile Information</h3>
             <p className="text-sm text-foreground/60">Update your personal details and organization info.</p>
@@ -99,13 +96,10 @@ export default function Account() {
                     {fullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <button className="text-xs font-medium text-primary hover:underline">
-                  Change
-                </button>
               </div>
 
               {/* Fields */}
-              <div className="flex-1 grid grid-cols-2 gap-4">
+              <div className="min-w-0 flex-1 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="fullName" className="text-xs text-foreground/60 flex items-center gap-1.5">
                     <User className="h-3 w-3" /> Full Name
@@ -116,19 +110,7 @@ export default function Account() {
                   <Label htmlFor="email" className="text-xs text-foreground/60 flex items-center gap-1.5">
                     <Mail className="h-3 w-3" /> Email Address
                   </Label>
-                  <Input id="email" defaultValue="sarah.chen@electus.io" className="glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="role" className="text-xs text-foreground/60 flex items-center gap-1.5">
-                    <Briefcase className="h-3 w-3" /> Role
-                  </Label>
-                  <Input id="role" defaultValue="Head of Talent" className="glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="company" className="text-xs text-foreground/60 flex items-center gap-1.5">
-                    <Building2 className="h-3 w-3" /> Company Name
-                  </Label>
-                  <Input id="company" defaultValue="Electus Corp." className="glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground" />
+                  <Input id="email" readOnly value={localStorage.getItem("electus-user-email") || ""} placeholder="Unavailable" className="glass-input border-foreground/[0.08] bg-foreground/[0.04] text-foreground" />
                 </div>
               </div>
             </div>
@@ -143,10 +125,10 @@ export default function Account() {
         </div>
 
         {/* Card 2: App Preferences */}
-        <div className="glass glass-plasma rounded-xl">
+        <div className="border bg-card rounded-xl">
           <div className="px-6 pt-5 pb-3">
             <h3 className="text-lg font-semibold text-foreground">Preferences & Display</h3>
-            <p className="text-sm text-foreground/60">Customize your experience and notification settings.</p>
+            <p className="text-sm text-foreground/60">Choose a theme for this device.</p>
           </div>
           <div className="px-6 pb-6 space-y-6">
             {/* Theme Selector */}
@@ -157,10 +139,11 @@ export default function Account() {
                   <button
                     key={t}
                     onClick={() => setTheme(t)}
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all capitalize ${
+                    aria-pressed={theme === t}
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors capitalize ${
                       theme === t
                         ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-foreground/40 hover:text-foreground/70 hover:bg-foreground/[0.05]"
+                        : "text-muted-foreground hover:text-foreground/70 hover:bg-foreground/[0.05]"
                     }`}
                   >
                     {t}
@@ -169,24 +152,11 @@ export default function Account() {
               </div>
             </div>
 
-            {/* Email Notifications */}
-            <div className="flex items-center justify-between rounded-lg border border-foreground/[0.08] bg-foreground/[0.03] px-4 py-3">
-              <div className="space-y-0.5">
-                <p className="text-sm font-medium text-foreground">Email Notifications</p>
-                <p className="text-xs text-foreground/40">
-                  Receive alerts when batch AI processing is complete.
-                </p>
-              </div>
-              <Switch
-                checked={emailNotifications}
-                onCheckedChange={setEmailNotifications}
-              />
-            </div>
           </div>
         </div>
 
         {/* Card 2.5: Target Company Culture */}
-        <div className="glass glass-plasma rounded-xl">
+        <div className="border bg-card rounded-xl">
           <div className="px-6 pt-5 pb-3">
             <div className="flex items-center justify-between">
               <div>
@@ -268,61 +238,11 @@ export default function Account() {
         </div>
 
         {/* Card 3: Subscription & Billing */}
-        <div className="glass glass-plasma rounded-xl">
-          <div className="px-6 pt-5 pb-3">
-            <h3 className="text-lg font-semibold text-foreground">Current Plan & Usage</h3>
-            <p className="text-sm text-foreground/60">View your subscription details and AI processing quota.</p>
-          </div>
-          <div className="px-6 pb-6 space-y-6">
-            {/* Plan Badge */}
-            <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/[0.06] px-5 py-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/[0.15]">
-                  <Zap className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-foreground">Professional Plan</p>
-                    <Badge className="bg-primary/20 text-primary border-0 text-[10px] font-semibold hover:bg-primary/20">
-                      ACTIVE
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-foreground/40 mt-0.5">Billed monthly · Next invoice on Apr 1, 2026</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-foreground">
-                  $25
-                </p>
-                <p className="text-xs font-normal text-foreground/60">/per user per month</p>
-              </div>
-            </div>
-
-            {/* Usage Bar */}
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs text-foreground/60 flex items-center gap-1.5">
-                  <CreditCard className="h-3 w-3" /> AI Processing & RAG Search Quota
-                </Label>
-                <span className="text-xs font-semibold text-foreground">80%</span>
-              </div>
-              <Progress value={80} className="h-2.5 bg-foreground/[0.06] [&>div]:bg-primary" />
-              <p className="text-xs text-foreground/60">
-                <span className="font-medium text-foreground">8,000</span> / 10,000 AI tokens used this month.
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10 text-sm">
-                Cancel Subscription
-              </Button>
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                Manage Billing
-              </Button>
-            </div>
-          </div>
-        </div>
+        <section className="rounded-xl border bg-card p-6">
+          <h2 className="text-lg font-semibold">Plans and billing</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Billing details are unavailable in this workspace.</p>
+          <Button variant="outline" asChild className="mt-4"><Link to="/pricing">View plans</Link></Button>
+        </section>
       </div>
     </DashboardLayout>
   );

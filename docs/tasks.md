@@ -363,3 +363,10 @@ Ada dependensi yang tidak terpakai (seperti `@google/genai`, `pdf-parse`, `mammo
 - **Apa yang Telah Dilakukan:**
   - Review `gemini.service.ts` dan `package.json`.
 
+
+## Frontend redesign
+
+- [x] Rebuilt the recruitment overview around review progress, CV upload, and the candidate queue.
+- [x] Unified responsive workspace, account, upload, analytics, and public pages in light and dark themes.
+- [x] Connected analytics date ranges to CV upload dates and removed placeholder processing and billing figures.
+- [x] Verified the production build, nine frontend tests, and all nine routes at desktop and mobile widths with mocked candidate data.

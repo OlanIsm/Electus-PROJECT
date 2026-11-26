@@ -31,7 +31,7 @@ export function CandidateRow({
 
   return (
     <div
-      className="candidate-row group flex items-center gap-4 rounded-xl glass px-5 py-4 cursor-pointer animate-fade-in"
+      className="candidate-row group flex items-center gap-4 rounded-xl glass px-5 py-4 cursor-pointer"
       onClick={() => onViewProfile(candidate)}
     >
       {/* Name, preview, and skills */}
@@ -44,10 +44,10 @@ export function CandidateRow({
             <LoaderCircle aria-hidden="true" className="h-4 w-4 shrink-0 animate-spin text-primary" />
           )}
           {candidate.hasPortfolio && (
-            <Link2 className="h-3.5 w-3.5 text-foreground/40 shrink-0" />
+            <Link2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
           )}
           {candidate.createdAt && (
-            <span className="text-[10px] text-foreground/40 shrink-0">
+            <span className="text-[10px] text-muted-foreground shrink-0">
               {new Date(candidate.createdAt).toLocaleDateString("id-ID", {
                 day: "numeric",
                 month: "short",
@@ -79,7 +79,7 @@ export function CandidateRow({
           {candidate.hollandCode.primary} – {candidate.hollandCode.label}
         </Badge>
       ) : (
-        <Badge variant="outline" className="shrink-0 text-[11px] font-medium border-foreground/[0.1] bg-foreground/[0.04] text-foreground/40">
+        <Badge variant="outline" className="shrink-0 text-[11px] font-medium border-foreground/[0.1] bg-foreground/[0.04] text-muted-foreground">
           N/A
         </Badge>
       )}
@@ -110,7 +110,7 @@ export function CandidateRow({
           <Button
             variant="ghost"
             size="sm"
-            className="text-xs h-8 text-foreground/40 hover:text-foreground hover:bg-foreground/[0.06]"
+            className="text-xs h-8 text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06]"
             onClick={() => onToggleStatus(candidate.id)}
           >
             Mark Done
