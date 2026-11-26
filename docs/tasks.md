@@ -248,15 +248,14 @@ Semua daftar kandidat ditarik sekaligus tanpa paginasi.
 Potongan teks CV sebelumnya dibatasi kaku sehingga CV panjang terpotong. Selain itu, beban inferensi AI bergantung penuh pada Ollama lokal.
 - **Rencana Implementasi:**
   1. Naikkan context window (hingga 30.000 karakter) dan integrasikan Google Gemini API (`gemini-3.5-flash-lite`) via SDK `@google/genai` dengan JSON structured response.
-  2. Integrasikan model embedding cloud `gemini-embedding-001` dengan output 768 dimensi yang kompatibel langsung dengan database pgvector PostgreSQL.
-  3. Pasang proteksi retry exponential backoff pada HTTP 429 rate limiting.
+  2. Integrasikan model `gemini-embedding-2` dengan output 1536 dimensi untuk pencarian di PostgreSQL.
+  3. Alihkan analisis ke Gemini 3.8 Flash jika model utama gagal.
 - **Apa yang Telah Dilakukan:**
-  - `AiService` dimigrasikan untuk mendukung mode hybrid: Gemini API cloud default dengan fallback otomatis ke Ollama lokal jika offline / non-API.
-  - Context window dinaikkan menjadi 30.000 karakter.
-  - Dukungan Gemini structured JSON extraction & 768-dim embedding (`gemini-embedding-001`).
-  - Mekanisme exponential backoff retry pada kode HTTP 429 / RESOURCE_EXHAUSTED.
-  - Vektor embedding 4 kandidat eksisting di PostgreSQL berhasil di-re-embed ke representasi Gemini.
-  - Unit test `ai.service.spec.ts` diperbarui dengan 100% kelulusan (30 test lulus).
+  - PDF diproses lokal dengan unpdf dan DOCX dengan Mammoth. Gemini menerima teks hasil ekstraksi.
+  - Analisis memakai Gemini 3.5 Flash-Lite dengan Gemini 3.8 Flash sebagai fallback. Ollama tidak diperlukan.
+  - Embedding baru memakai 1536 dimensi. Kandidat dengan vektor lama tetap dapat dicari lewat kata kunci.
+  - PDF tanpa lapisan teks diberi status gagal dengan pesan OCR. Implementasi OCR tetap dicatat di TASK-11.
+  - Root `npm run dev` menjalankan NestJS dan Vite bersamaan.
 
 ---
 

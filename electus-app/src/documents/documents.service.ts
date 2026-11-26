@@ -1,10 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as mammoth from 'mammoth';
 
-// pdf-parse v1.1.1 export
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse');
-
 @Injectable()
 export class DocumentsService {
   /**
@@ -18,8 +14,9 @@ export class DocumentsService {
 
     if (file.mimetype === 'application/pdf') {
       try {
-        const parsed = await pdfParse(file.buffer);
-        return parsed.text ?? '';
+        const { extractText } = await import('unpdf');
+        const { text } = await extractText(new Uint8Array(file.buffer), { mergePages: true });
+        return text.trim();
       } catch (err) {
         console.error('Failed to parse PDF document:', err);
         throw new BadRequestException('Failed to extract text from PDF document');

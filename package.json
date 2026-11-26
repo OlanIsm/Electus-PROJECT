@@ -1,0 +1,11 @@
+{
+  "name": "electus-project",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --names api,web \"npm --prefix electus-app run start:dev\" \"npm --prefix electus-frontend run dev\"",
+    "setup": "npm ci --prefix electus-app && npm ci --prefix electus-frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7"
+  }
+}

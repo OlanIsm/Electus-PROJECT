@@ -6,7 +6,8 @@ describe('AiService', () => {
 
   beforeEach(async () => {
     delete process.env.GEMINI_API_KEY;
-    delete process.env.AI_PROVIDER;
+    delete process.env.GEMINI_MODEL;
+    delete process.env.GEMINI_FALLBACK_MODEL;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [AiService],
@@ -51,83 +52,9 @@ describe('AiService', () => {
     });
   });
 
-  describe('generateEmbedding (Ollama)', () => {
-    it('should call fetch and return embeddings array', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue({ embeddings: [[0.1, 0.2, 0.3]] }),
-      });
-
-      const result = await service.generateEmbedding('test text');
-      expect(global.fetch).toHaveBeenCalled();
-      expect(result).toEqual([0.1, 0.2, 0.3]);
-    });
-
-    it('should fallback to /api/embeddings if /api/embed returns 404', async () => {
-      global.fetch = jest
-        .fn()
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 404,
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: jest.fn().mockResolvedValue({ embedding: [0.4, 0.5, 0.6] }),
-        });
-
-      const result = await service.generateEmbedding('test text');
-      expect(global.fetch).toHaveBeenCalledTimes(2);
-      expect(result).toEqual([0.4, 0.5, 0.6]);
-    });
-
-    it('should return empty array on fetch failure', async () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
-      const result = await service.generateEmbedding('test text');
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('analyzeCv (Ollama)', () => {
-    it('should parse Ollama JSON response and transform holland code', async () => {
-      const mockResponse = {
-        fullName: 'John Doe',
-        email: 'john@example.com',
-        education: 'Bachelor',
-        experience: 'Entry-level',
-        skills: ['React', 'Node.js'],
-        aiSummary: ['Good developer'],
-        hasPortfolio: true,
-        portfolioUrl: 'github.com',
-        hollandCode: {
-          primary: 'I',
-          distribution: { R: 10, I: 50, A: 10, S: 10, E: 10, C: 10 },
-        },
-      };
-
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: jest
-          .fn()
-          .mockResolvedValue({ response: JSON.stringify(mockResponse) }),
-      });
-
-      const result = await service.analyzeCv('my cv text');
-      expect(global.fetch).toHaveBeenCalled();
-
-      expect(result.fullName).toBe('John Doe');
-      expect(result.hollandCode.primary).toBe('I');
-      expect(result.hollandCode.label).toBe('Thinker');
-      expect(result.hollandCode.distribution.length).toBe(6);
-      expect(
-        result.hollandCode.distribution.find((d) => d.code === 'I')?.value,
-      ).toBe(50);
-    });
-  });
-
   describe('Gemini Integration', () => {
     it('should call Gemini generateContent and parse CV analysis', async () => {
       process.env.GEMINI_API_KEY = 'fake-gemini-key';
-      process.env.AI_PROVIDER = 'gemini';
 
       const mockResponse = {
         fullName: 'Jane Smith',
@@ -155,16 +82,30 @@ describe('AiService', () => {
       };
 
       const result = await service.analyzeCv('cv text for Jane');
-      expect(mockGenerateContent).toHaveBeenCalled();
+      expect(mockGenerateContent).toHaveBeenCalledWith(
+        expect.objectContaining({ model: 'gemini-3.5-flash-lite' }),
+      );
       expect(result.fullName).toBe('Jane Smith');
       expect(result.experience).toBe('Senior');
       expect(result.hollandCode.label).toBe('Thinker');
       expect(result.hollandCode.distribution.length).toBe(6);
     });
 
+    it('falls back to Flash when Flash-Lite returns invalid JSON', async () => {
+      process.env.GEMINI_API_KEY = 'fake-gemini-key';
+      const generateContent = jest.fn()
+        .mockResolvedValueOnce({ text: '' })
+        .mockResolvedValueOnce({ text: '{"skills":[],"aiSummary":[]}' });
+      (service as any).geminiClient = { models: { generateContent } };
+
+      await expect(service.analyzeCv('CV text')).resolves.toMatchObject({ skills: [] });
+      expect(generateContent.mock.calls.map(([request]) => request.model)).toEqual([
+        'gemini-3.5-flash-lite', 'gemini-3.8-flash',
+      ]);
+    });
+
     it('should call Gemini embedContent and return vector values', async () => {
       process.env.GEMINI_API_KEY = 'fake-gemini-key';
-      process.env.AI_PROVIDER = 'gemini';
 
       const mockEmbedContent = jest.fn().mockResolvedValue({
         embeddings: [{ values: [0.123, 0.456, 0.789] }],

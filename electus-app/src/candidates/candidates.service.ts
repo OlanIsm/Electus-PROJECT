@@ -178,6 +178,13 @@ export class CandidatesService implements OnModuleInit {
   async processCandidateAsync(candidateId: string, file: Express.Multer.File): Promise<void> {
     try {
       const cvText = await this.documentsService.extractText(file);
+      if (!cvText.trim()) {
+        await this.candidateRepository.update(candidateId, {
+          processingStatus: 'error',
+          aiSummary: ['No text found. Upload a text-based CV or run OCR first.'],
+        });
+        return;
+      }
       const analysis = await this.aiService.analyzeCv(cvText);
       const embedding = await this.aiService.generateEmbedding(cvText);
 
@@ -238,6 +245,11 @@ export class CandidatesService implements OnModuleInit {
         companyCondition = `AND c."companyId" = $${queryParams.length}`;
       }
 
+      const semanticScoreSql = `CASE
+        WHEN cardinality(c.embedding) = cardinality($1::double precision[])
+        THEN cosine_similarity(c.embedding, $1::double precision[])
+        ELSE 0.0 END`;
+
       const rawResults = await this.candidateRepository.query(
         `
         SELECT 
@@ -257,16 +269,16 @@ export class CandidatesService implements OnModuleInit {
           c."hasPortfolio",
           c."cvFilePath",
           c."createdAt",
-          cosine_similarity(c.embedding, $1::double precision[]) AS "semanticScore",
+          ${semanticScoreSql} AS "semanticScore",
           CASE 
             WHEN LOWER(concat_ws(' ', c."fullName", c."cvText", c.skills, c.education, c.experience, c."aiSummary")) LIKE $2 
             THEN 0.5 
             ELSE 0.0 
           END AS "textScore"
         FROM candidate c
-        WHERE c.embedding IS NOT NULL ${companyCondition}
+        WHERE TRUE ${companyCondition}
         ORDER BY GREATEST(
-          cosine_similarity(c.embedding, $1::double precision[]),
+          ${semanticScoreSql},
           CASE 
             WHEN LOWER(concat_ws(' ', c."fullName", c."cvText", c.skills, c.education, c.experience, c."aiSummary")) LIKE $2 
             THEN 0.5 
