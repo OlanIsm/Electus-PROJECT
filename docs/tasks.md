@@ -369,3 +369,8 @@ Ada dependensi yang tidak terpakai (seperti `@google/genai`, `pdf-parse`, `mammo
 - [x] Add a protected Search page that submits on Enter and lists candidates in hybrid search order.
 - [x] Break equal hybrid scores by semantic similarity, then upload date and candidate ID.
 - [x] Reuse candidate detail and review actions with blind screening enabled.
+
+## Expandable sidebar
+
+- [x] Integrate glass navigation with desktop expand/collapse, a mobile icon bar, route filtering, and logout.
+- [x] Check both themes and viewport sizes in Chromium with mocked API responses.

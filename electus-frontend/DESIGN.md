@@ -13,8 +13,8 @@ authenticated routes; their page content has not been redesigned.
 - Typography: Urbanist, weights 400-700, loaded from Google Fonts. This is a
   close geometric substitute, not an identification of the reference's font.
 - Canvas: `#f3f6f7`, edge-to-edge with no outer padding, frame, or rounded
-  desktop shell. The sidebar touches the viewport edges; content uses the full
-  available width with internal spacing retained.
+  desktop shell. The floating sidebar sits beside the content on desktop. The content uses
+  the remaining width.
 - Ink: `#153648`; secondary text: `#51616b`.
 - Brand navy: `#0b354d` for the primary upload card and active navigation/tabs.
 - Brand emerald: `#21734f` for progress, review actions, focus, and selection controls.
@@ -38,7 +38,8 @@ authenticated routes; their page content has not been redesigned.
 Mode: Operate. Recruiters upload CVs, search candidates, review profiles, and
 track progress. Desktop places candidate work in the wide left column and
 live review progress on the right. Below 960px these sections stack. Below
-640px the icon rail becomes fixed bottom navigation with safe-area padding.
+768px navigation starts as a horizontal icon bar above the content. Opening it
+reveals the full menu and page filter in place.
 
 Blind screening remains enabled initially. All figures derive from the current
 candidate collection, except the pre-existing Interviews Sent metric, which
@@ -69,3 +70,10 @@ Desktop (1440px) and mobile (390px) browser checks use synthetic, intercepted
 API responses, not production candidate data. Checked blind screening,
 profile opening, review status updates, tabs, delete cancellation, and search.
 The dark desktop rendering is also checked. The live backend was not started.
+
+## Expandable navigation
+
+The shared glass sidebar uses the Electus logo and Lucide icons. Desktop keeps
+the user's expanded or collapsed preference. The active page stays marked in
+both modes. Expanded navigation includes a filter for page names. SVG
+refraction falls back to CSS blur where unsupported.

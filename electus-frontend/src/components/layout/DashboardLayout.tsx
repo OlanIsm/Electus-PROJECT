@@ -9,7 +9,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="dashboard-shell min-h-screen blueprint-bg">
       <AppSidebar />
-      <main className="dashboard-main relative z-10 ml-60 min-h-screen">
+      <main className="dashboard-main relative z-10 min-w-0 min-h-screen">
         <div className="dashboard-content mx-auto max-w-[1200px] px-8 py-6">
           {children}
         </div>
